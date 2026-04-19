@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shape Match Garden</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main
+      id="shape-match-app"
+      class="app-shell"
+      data-testid="shape-match-app"
+      data-mode="intro"
+    >
+      <section class="intro-panel">
+        <p class="eyebrow">EduGames sample title</p>
+        <h1>Shape Match Garden</h1>
+        <p class="lede">
+          A calm preschool matching game built for landscape play. Tap a bright
+          shape, then tap the matching outline to help it settle into the
+          garden.
+        </p>
+        <div class="control-row">
+          <button id="start-button" type="button">Start</button>
+          <button id="restart-button" type="button">Restart</button>
+          <button id="exit-button" type="button" class="secondary">
+            Exit
+          </button>
+        </div>
+        <p class="helper-text">
+          Best with touch or mouse. Press <kbd>F</kbd> to toggle fullscreen.
+        </p>
+        <p
+          id="prompt-text"
+          class="automation-pill"
+          data-testid="shape-match-prompt"
+          data-mode="intro"
+        >
+          Match the two shapes at the top!
+        </p>
+        <p
+          id="progress-state"
+          class="automation-pill"
+          data-testid="shape-match-progress"
+          data-round="1"
+          data-total-rounds="3"
+          data-session-stars="0"
+        >
+          Round 1 of 3 · Stars 0
+        </p>
+        <p
+          id="target-state"
+          class="automation-pill"
+          data-testid="shape-match-targets"
+          data-targets="[]"
+        >
+          circle:open | square:open
+        </p>
+        <p id="status-text" class="status-text" aria-live="polite">
+          Tap Start to help the shapes find their homes.
+        </p>
+        <section
+          id="completion-state"
+          class="completion-card"
+          data-testid="shape-match-complete"
+          data-visible="false"
+          hidden
+        >
+          You finished with 0 stars.
+        </section>
+      </section>
+
+      <section class="canvas-panel" aria-label="Shape Match game board">
+        <canvas
+          id="game-canvas"
+          width="1280"
+          height="720"
+          aria-label="Shape Match Garden canvas"
+        ></canvas>
+      </section>
+    </main>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

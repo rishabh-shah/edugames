@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title>Shape Match Garden icon</title>
+  <rect width="256" height="256" rx="56" fill="#fff3c4" />
+  <circle cx="92" cy="104" r="42" fill="#ff7a8a" stroke="#27403d" stroke-width="12" />
+  <rect x="112" y="116" width="84" height="84" rx="18" fill="#4aa6ff" stroke="#27403d" stroke-width="12" />
+  <polygon points="182,54 170,88 134,88 164,110 152,146 182,124 212,146 200,110 230,88 194,88" fill="#62c67e" stroke="#27403d" stroke-width="10" />
+</svg>

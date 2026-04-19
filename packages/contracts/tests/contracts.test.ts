@@ -70,16 +70,26 @@ describe("contracts package", () => {
 
   it("validates the game manifest contract", () => {
     const manifest = gameManifestSchema.parse({
+      schemaVersion: 1,
+      gameId: "shape-match",
       slug: "shape-match",
       title: "Shape Match",
       summary: "Match circles, squares, and triangles.",
       description: "A simple recognition game for preschoolers.",
       version: "1.0.0",
+      runtime: "html5",
       entrypoint: "index.html",
+      orientation: "landscape",
+      defaultLocale: "en-US",
+      supportedLocales: ["en-US"],
       minAgeBand: "PRESCHOOL_3_5",
       maxAgeBand: "EARLY_PRIMARY_6_8",
       categories: ["shapes", "visual-recognition"],
-      screenshots: ["assets/ss-1.png"],
+      offlineReady: true,
+      compressedSizeBytes: 4812031,
+      sha256: "a".repeat(64),
+      iconPath: "assets/icon.svg",
+      screenshotPaths: ["assets/ss-1.svg"],
       contentFlags: {
         externalLinks: false,
         ugc: false,
@@ -87,27 +97,45 @@ describe("contracts package", () => {
         ads: false,
         purchases: false
       },
-      offlineReady: true,
-      allowedEvents: ["milestone:first-match"],
-      license: "MIT"
+      telemetry: {
+        allowedEvents: ["milestone:first-match"]
+      },
+      capabilities: ["saveState", "events", "audio"],
+      assetLicenseDeclaration: {
+        code: "MIT",
+        art: "Original",
+        audio: "Not used",
+        fonts: "Not used"
+      }
     });
 
     expect(manifest.slug).toBe("shape-match");
+    expect(manifest.telemetry.allowedEvents).toContain("milestone:first-match");
   });
 
   it("rejects inverted age-band ranges in manifests and launch payloads", () => {
     expect(() =>
       gameManifestSchema.parse({
+        schemaVersion: 1,
+        gameId: "shape-match",
         slug: "shape-match",
         title: "Shape Match",
         summary: "Match circles, squares, and triangles.",
         description: "A simple recognition game for preschoolers.",
         version: "1.0.0",
+        runtime: "html5",
         entrypoint: "index.html",
+        orientation: "landscape",
+        defaultLocale: "en-US",
+        supportedLocales: ["en-US"],
         minAgeBand: "LATE_PRIMARY_9_10",
         maxAgeBand: "PRESCHOOL_3_5",
         categories: ["shapes"],
-        screenshots: ["assets/ss-1.png"],
+        offlineReady: true,
+        compressedSizeBytes: 4812031,
+        sha256: "a".repeat(64),
+        iconPath: "assets/icon.svg",
+        screenshotPaths: ["assets/ss-1.svg"],
         contentFlags: {
           externalLinks: false,
           ugc: false,
@@ -115,9 +143,16 @@ describe("contracts package", () => {
           ads: false,
           purchases: false
         },
-        offlineReady: true,
-        allowedEvents: ["milestone:first-match"],
-        license: "MIT"
+        telemetry: {
+          allowedEvents: ["milestone:first-match"]
+        },
+        capabilities: ["saveState", "events"],
+        assetLicenseDeclaration: {
+          code: "MIT",
+          art: "Original",
+          audio: "Not used",
+          fonts: "Not used"
+        }
       })
     ).toThrow(/minAgeBand/i);
 
@@ -142,6 +177,94 @@ describe("contracts package", () => {
         }
       })
     ).toThrow(/minAgeBand/i);
+  });
+
+  it("rejects manifest locale drift and mismatched ids", () => {
+    expect(() =>
+      gameManifestSchema.parse({
+        schemaVersion: 1,
+        gameId: "shape-match-v2",
+        slug: "shape-match",
+        title: "Shape Match",
+        summary: "Match circles, squares, and triangles.",
+        description: "A simple recognition game for preschoolers.",
+        version: "1.0.0",
+        runtime: "html5",
+        entrypoint: "index.html",
+        orientation: "landscape",
+        defaultLocale: "en-US",
+        supportedLocales: ["en-GB"],
+        minAgeBand: "PRESCHOOL_3_5",
+        maxAgeBand: "PRESCHOOL_3_5",
+        categories: ["shapes"],
+        offlineReady: true,
+        compressedSizeBytes: 4812031,
+        sha256: "a".repeat(64),
+        iconPath: "assets/icon.svg",
+        screenshotPaths: ["assets/ss-1.svg"],
+        contentFlags: {
+          externalLinks: false,
+          ugc: false,
+          chat: false,
+          ads: false,
+          purchases: false
+        },
+        telemetry: {
+          allowedEvents: ["milestone:first-match"]
+        },
+        capabilities: ["saveState", "events"],
+        assetLicenseDeclaration: {
+          code: "MIT",
+          art: "Original",
+          audio: "Not used",
+          fonts: "Not used"
+        }
+      })
+    ).toThrow(/defaultLocale|gameId/i);
+  });
+
+  it("rejects manifest paths that escape the bundle root", () => {
+    expect(() =>
+      gameManifestSchema.parse({
+        schemaVersion: 1,
+        gameId: "shape-match",
+        slug: "shape-match",
+        title: "Shape Match",
+        summary: "Match circles, squares, and triangles.",
+        description: "A simple recognition game for preschoolers.",
+        version: "1.0.0",
+        runtime: "html5",
+        entrypoint: "../outside.html",
+        orientation: "landscape",
+        defaultLocale: "en-US",
+        supportedLocales: ["en-US"],
+        minAgeBand: "PRESCHOOL_3_5",
+        maxAgeBand: "PRESCHOOL_3_5",
+        categories: ["shapes"],
+        offlineReady: true,
+        compressedSizeBytes: 4812031,
+        sha256: "a".repeat(64),
+        iconPath: "assets/icon.svg",
+        screenshotPaths: ["assets/ss-1.svg"],
+        contentFlags: {
+          externalLinks: false,
+          ugc: false,
+          chat: false,
+          ads: false,
+          purchases: false
+        },
+        telemetry: {
+          allowedEvents: ["milestone:first-match"]
+        },
+        capabilities: ["saveState", "events"],
+        assetLicenseDeclaration: {
+          code: "MIT",
+          art: "Original",
+          audio: "Not used",
+          fonts: "Not used"
+        }
+      })
+    ).toThrow(/bundle path/i);
   });
 
   it("generates an OpenAPI smoke document for the app-facing API", () => {

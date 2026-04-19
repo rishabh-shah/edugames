@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "gameId": "shape-match",
+  "slug": "shape-match",
+  "title": "Shape Match",
+  "summary": "Match circles, squares, and triangles.",
+  "description": "A simple recognition game for preschoolers.",
+  "version": "1.0.0",
+  "runtime": "html5",
+  "entrypoint": "index.html",
+  "orientation": "landscape",
+  "defaultLocale": "en-US",
+  "supportedLocales": ["en-US"],
+  "minAgeBand": "PRESCHOOL_3_5",
+  "maxAgeBand": "PRESCHOOL_3_5",
+  "categories": ["shapes", "visual-recognition"],
+  "offlineReady": true,
+  "compressedSizeBytes": 20480,
+  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "iconPath": "assets/icon.svg",
+  "screenshotPaths": ["assets/ss-1.svg", "assets/ss-2.svg"],
+  "contentFlags": {
+    "externalLinks": false,
+    "ugc": false,
+    "chat": false,
+    "ads": false,
+    "purchases": false
+  },
+  "telemetry": {
+    "allowedEvents": ["milestone:first-match", "milestone:round-complete"]
+  },
+  "capabilities": ["saveState", "events", "audio"],
+  "assetLicenseDeclaration": {
+    "code": "MIT",
+    "art": "Original",
+    "audio": "Not used",
+    "fonts": "Not used"
+  }
+}

@@ -1,13 +1,13 @@
 {
   "name": "@edugames/shape-match",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "EduGames shape-match game placeholder workspace.",
+  "description": "EduGames sample static HTML5 shape-matching game.",
   "scripts": {
-    "build": "node ../../scripts/placeholder-task.mjs @edugames/shape-match build",
-    "test": "vitest run tests/smoke.test.js",
-    "lint": "node ../../scripts/placeholder-task.mjs @edugames/shape-match lint",
-    "typecheck": "node ../../scripts/placeholder-task.mjs @edugames/shape-match typecheck"
+    "build": "node ./scripts/build.mjs",
+    "test": "vitest run --config vitest.config.ts --configLoader runner",
+    "lint": "node ./scripts/lint.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }

@@ -5,6 +5,8 @@
   "type": "module",
   "description": "EduGames Fastify API service.",
   "scripts": {
+    "pretest": "pnpm --filter @edugames/contracts build",
+    "pretypecheck": "pnpm --filter @edugames/contracts build",
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "dev": "tsx watch src/server.ts",
     "predev": "pnpm --filter @edugames/contracts build",

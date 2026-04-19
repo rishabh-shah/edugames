@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "gameId": "shape-match",
+  "slug": "shape-match",
+  "title": "Shape Match Garden",
+  "summary": "Match bright shapes into their cozy outlines in a calm garden scene.",
+  "description": "Shape Match Garden is a polished HTML5 sample game for the EduGames platform. Preschool players tap a colorful tray shape and then tap the matching outline above it to complete three gentle rounds. The game is designed for landscape play, works fully offline, and uses the shared EduGames browser SDK for readiness, save-state, and exit events.",
+  "version": "0.1.0",
+  "runtime": "html5",
+  "entrypoint": "index.html",
+  "orientation": "landscape",
+  "defaultLocale": "en-US",
+  "supportedLocales": [
+    "en-US"
+  ],
+  "minAgeBand": "PRESCHOOL_3_5",
+  "maxAgeBand": "EARLY_PRIMARY_6_8",
+  "categories": [
+    "matching",
+    "shapes",
+    "logic"
+  ],
+  "offlineReady": true,
+  "compressedSizeBytes": 16384,
+  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "iconPath": "assets/icon.svg",
+  "screenshotPaths": [
+    "assets/screenshots/title-screen.svg",
+    "assets/screenshots/gameplay-screen.svg"
+  ],
+  "contentFlags": {
+    "externalLinks": false,
+    "ugc": false,
+    "chat": false,
+    "ads": false,
+    "purchases": false
+  },
+  "telemetry": {
+    "allowedEvents": [
+      "game_started",
+      "shape_matched",
+      "round_completed",
+      "game_completed",
+      "game_exited"
+    ]
+  },
+  "capabilities": [
+    "saveState",
+    "events"
+  ],
+  "assetLicenseDeclaration": {
+    "code": "CC0-1.0",
+    "art": "CC0-1.0",
+    "audio": "CC0-1.0",
+    "fonts": "System fonts"
+  }
+}

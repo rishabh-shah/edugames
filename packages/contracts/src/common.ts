@@ -34,10 +34,27 @@ export const reportIdSchema = z
 
 export const avatarIdSchema = z.string().min(1).max(64);
 export const localeSchema = z.string().min(2).max(32);
-export const gameIdSchema = z.string().min(1).max(128);
 export const gameSlugSchema = z
   .string()
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Expected kebab-case slug");
+export const gameIdSchema = gameSlugSchema;
+export const localBundlePathSchema = z.string().min(1).refine(
+  (value) => {
+    if (value.startsWith("/") || value.startsWith("\\") || /^[A-Za-z]:/.test(value)) {
+      return false;
+    }
+
+    const segments = value.split(/[\\/]/);
+
+    return segments.every((segment) => segment.length > 0 && segment !== "." && segment !== "..");
+  },
+  "Expected a normalized relative bundle path."
+);
+export const runtimeSchema = z.enum(["html5"]);
+export const orientationSchema = z.enum(["landscape"]);
+export const sha256ChecksumSchema = z
+  .string()
+  .regex(/^[a-f0-9]{64}$/i, "Expected a SHA-256 checksum.");
 
 export const opaqueTokenSchema = z.string().min(32).max(512);
 export const accessTokenSchema = z.string().min(32).max(2048);

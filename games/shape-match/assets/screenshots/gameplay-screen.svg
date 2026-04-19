@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title">
+  <title>Shape Match Garden gameplay screen</title>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#eff8ff" />
+      <stop offset="100%" stop-color="#fff6d1" />
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#sky)" />
+  <rect y="610" width="1280" height="110" fill="#d7f4ce" />
+  <text x="58" y="74" fill="#27403d" font-family="Avenir Next, Trebuchet MS, sans-serif" font-size="48" font-weight="700">Shape Match Garden</text>
+  <text x="58" y="112" fill="#496465" font-family="Avenir Next, Trebuchet MS, sans-serif" font-size="28">Round complete! Watch the stars sparkle.</text>
+  <text x="1056" y="78" fill="#27403d" font-family="Avenir Next, Trebuchet MS, sans-serif" font-size="32" font-weight="700">Stars: 6</text>
+  <rect x="368" y="138" width="180" height="168" rx="24" fill="#ffffff" stroke="#d4ecff" stroke-width="5" />
+  <polygon points="458,176 408,264 508,264" fill="#f7c64b" stroke="#27403d" stroke-width="7" />
+  <rect x="582" y="138" width="180" height="168" rx="24" fill="#ffffff" stroke="#d4ecff" stroke-width="5" />
+  <polygon points="672,176 654,224 604,224 644,254 628,304 672,272 716,304 700,254 740,224 690,224" fill="#62c67e" stroke="#27403d" stroke-width="7" />
+  <rect x="796" y="138" width="180" height="168" rx="24" fill="#ffffff" stroke="#d4ecff" stroke-width="5" />
+  <circle cx="886" cy="222" r="48" fill="#ff7a8a" stroke="#27403d" stroke-width="7" />
+  <rect x="262" y="458" width="180" height="168" rx="24" fill="#fff4b8" stroke="#e5b300" stroke-width="5" />
+  <circle cx="352" cy="542" r="48" fill="#ff7a8a" stroke="#27403d" stroke-width="7" />
+  <rect x="476" y="458" width="180" height="168" rx="24" fill="#ffffff" stroke="#d8e2ec" stroke-width="5" />
+  <polygon points="566,496 548,544 498,544 538,574 522,624 566,592 610,624 594,574 634,544 584,544" fill="#62c67e" stroke="#27403d" stroke-width="7" />
+  <rect x="690" y="458" width="180" height="168" rx="24" fill="#ffffff" stroke="#d8e2ec" stroke-width="5" />
+  <polygon points="780,494 730,582 830,582" fill="#f7c64b" stroke="#27403d" stroke-width="7" />
+  <polygon points="1162,106 1146,150 1100,150 1138,178 1122,222 1162,194 1202,222 1186,178 1224,150 1178,150" fill="#ffd55e" stroke="#d89c00" stroke-width="6" />
+</svg>

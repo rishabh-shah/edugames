@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title">
+  <title>Shape Match Garden title screen</title>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#eff8ff" />
+      <stop offset="100%" stop-color="#fff6d1" />
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#sky)" />
+  <rect y="610" width="1280" height="110" fill="#d7f4ce" />
+  <rect x="72" y="70" width="330" height="580" rx="28" fill="#ffffffdd" />
+  <text x="112" y="150" fill="#27403d" font-family="Avenir Next, Trebuchet MS, sans-serif" font-size="26">EduGames sample title</text>
+  <text x="112" y="238" fill="#27403d" font-family="Avenir Next, Trebuchet MS, sans-serif" font-size="64" font-weight="700">Shape Match</text>
+  <text x="112" y="304" fill="#27403d" font-family="Avenir Next, Trebuchet MS, sans-serif" font-size="64" font-weight="700">Garden</text>
+  <text x="112" y="382" fill="#56706e" font-family="Avenir Next, Trebuchet MS, sans-serif" font-size="28">Tap Start to begin!</text>
+  <rect x="176" y="440" width="136" height="58" rx="29" fill="#ff8a5b" />
+  <text x="215" y="478" fill="#ffffff" font-family="Avenir Next, Trebuchet MS, sans-serif" font-size="28" font-weight="700">Start</text>
+  <rect x="452" y="148" width="220" height="180" rx="28" fill="#ffffff" stroke="#d4ecff" stroke-width="5" />
+  <circle cx="562" cy="238" r="54" fill="#ffffff" opacity="0.2" stroke="#6b8f9b" stroke-width="7" />
+  <rect x="704" y="148" width="220" height="180" rx="28" fill="#ffffff" stroke="#d4ecff" stroke-width="5" />
+  <rect x="774" y="184" width="108" height="108" fill="#ffffff" opacity="0.2" stroke="#6b8f9b" stroke-width="7" />
+  <rect x="536" y="430" width="220" height="180" rx="28" fill="#ffffff" stroke="#d8e2ec" stroke-width="5" />
+  <rect x="606" y="470" width="108" height="108" fill="#4aa6ff" stroke="#27403d" stroke-width="7" />
+  <rect x="788" y="430" width="220" height="180" rx="28" fill="#ffffff" stroke="#d8e2ec" stroke-width="5" />
+  <circle cx="898" cy="520" r="54" fill="#ff7a8a" stroke="#27403d" stroke-width="7" />
+</svg>

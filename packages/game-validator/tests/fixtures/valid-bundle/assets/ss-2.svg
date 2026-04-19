@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1366" height="1024" viewBox="0 0 1366 1024" fill="none">
+  <rect width="1366" height="1024" fill="#DFF4FF" />
+  <rect x="78" y="74" width="1210" height="876" rx="52" fill="#FFFFFF" />
+  <text x="108" y="158" fill="#1D2B42" font-family="Avenir Next, sans-serif" font-size="64">Round Complete</text>
+  <rect x="144" y="258" width="1078" height="540" rx="48" fill="#F8FBFF" stroke="#B2D4F2" stroke-width="8" />
+  <circle cx="390" cy="528" r="100" fill="#FFCB47" />
+  <path d="M720 390L860 658H580L720 390Z" fill="#35B56A" />
+  <rect x="928" y="420" width="180" height="180" rx="36" fill="#FF7A59" />
+</svg>

@@ -1,0 +1,13 @@
+body {
+  margin: 0;
+  font-family: "Avenir Next", sans-serif;
+  background: #f9f5eb;
+  color: #1d2b42;
+}
+
+.fixture-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  gap: 1rem;
+}

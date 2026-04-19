@@ -38,7 +38,11 @@ importers:
 
   packages/game-sdk: {}
 
-  packages/game-validator: {}
+  packages/game-validator:
+    dependencies:
+      '@edugames/contracts':
+        specifier: workspace:*
+        version: link:../contracts
 
   packages/shared-config: {}
 

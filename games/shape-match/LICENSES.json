@@ -1,0 +1,39 @@
+{
+  "package": "shape-match",
+  "version": "0.1.0",
+  "licenses": [
+    {
+      "scope": "code",
+      "license": "CC0-1.0",
+      "paths": [
+        "index.html",
+        "styles.css",
+        "src",
+        "scripts"
+      ],
+      "notes": "Original sample-game code created for the EduGames platform workspace."
+    },
+    {
+      "scope": "art",
+      "license": "CC0-1.0",
+      "paths": [
+        "assets/icon.svg",
+        "assets/screenshots/title-screen.svg",
+        "assets/screenshots/gameplay-screen.svg"
+      ],
+      "notes": "Original SVG artwork created for the sample game package."
+    },
+    {
+      "scope": "audio",
+      "license": "CC0-1.0",
+      "paths": [],
+      "notes": "No audio assets are bundled in this package."
+    },
+    {
+      "scope": "fonts",
+      "license": "System fonts",
+      "paths": [],
+      "notes": "The runtime uses platform fonts and does not bundle font binaries."
+    }
+  ]
+}

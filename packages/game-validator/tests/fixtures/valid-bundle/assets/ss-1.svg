@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1366" height="1024" viewBox="0 0 1366 1024" fill="none">
+  <rect width="1366" height="1024" fill="#F7E4C6" />
+  <rect x="66" y="60" width="1234" height="904" rx="52" fill="#FFFDF8" />
+  <text x="110" y="158" fill="#1D2B42" font-family="Avenir Next, sans-serif" font-size="68">Shape Match</text>
+  <circle cx="320" cy="420" r="118" fill="#FF7A59" />
+  <rect x="560" y="304" width="236" height="236" rx="40" fill="#2D9CDB" />
+  <path d="M1010 278L1156 520H864L1010 278Z" fill="#35B56A" />
+</svg>
