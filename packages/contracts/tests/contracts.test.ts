@@ -95,6 +95,55 @@ describe("contracts package", () => {
     expect(manifest.slug).toBe("shape-match");
   });
 
+  it("rejects inverted age-band ranges in manifests and launch payloads", () => {
+    expect(() =>
+      gameManifestSchema.parse({
+        slug: "shape-match",
+        title: "Shape Match",
+        summary: "Match circles, squares, and triangles.",
+        description: "A simple recognition game for preschoolers.",
+        version: "1.0.0",
+        entrypoint: "index.html",
+        minAgeBand: "LATE_PRIMARY_9_10",
+        maxAgeBand: "PRESCHOOL_3_5",
+        categories: ["shapes"],
+        screenshots: ["assets/ss-1.png"],
+        contentFlags: {
+          externalLinks: false,
+          ugc: false,
+          chat: false,
+          ads: false,
+          purchases: false
+        },
+        offlineReady: true,
+        allowedEvents: ["milestone:first-match"],
+        license: "MIT"
+      })
+    ).toThrow(/minAgeBand/i);
+
+    expect(() =>
+      launchSessionResponseSchema.parse({
+        launchSessionId: "ls_123abc",
+        gameId: "shape-match",
+        version: "1.0.0",
+        bundle: {
+          bundleUrl: "https://cdn.example/games/shape-match/1.0.0/bundle.zip",
+          sha256: "a".repeat(64),
+          compressedSizeBytes: 4812031
+        },
+        manifest: {
+          entrypoint: "index.html",
+          minAgeBand: "LATE_PRIMARY_9_10",
+          maxAgeBand: "PRESCHOOL_3_5",
+          allowedEvents: ["milestone:first-match"]
+        },
+        cachePolicy: {
+          revalidateAfterSeconds: 86400
+        }
+      })
+    ).toThrow(/minAgeBand/i);
+  });
+
   it("generates an OpenAPI smoke document for the app-facing API", () => {
     const document = createOpenApiDocument("0.1.0-test");
 

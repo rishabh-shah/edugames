@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { ageBandSchema } from "./age-bands.js";
+import { ageBandSchema, isAgeBandRangeOrdered } from "./age-bands.js";
 import {
   gameIdSchema,
   launchSessionIdSchema,
@@ -18,7 +18,13 @@ export const launchManifestSchema = z.object({
   minAgeBand: ageBandSchema,
   maxAgeBand: ageBandSchema,
   allowedEvents: z.array(z.string().min(1))
-});
+}).refine(
+  (manifest) => isAgeBandRangeOrdered(manifest.minAgeBand, manifest.maxAgeBand),
+  {
+    message: "Expected minAgeBand to be less than or equal to maxAgeBand.",
+    path: ["maxAgeBand"]
+  }
+);
 
 export const launchBundleSchema = z.object({
   bundleUrl: z.string().url(),
