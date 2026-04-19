@@ -1,0 +1,819 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0A4F71B1F4A9B2FF5AC953CE /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB7E20D83583210BB4F865FD /* Security.framework */; };
+		3D1D7B1643F99E980061994F /* AppModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAEC5FEFE7D3FD2B6358B3F7 /* AppModelTests.swift */; };
+		3EF2F8CD96D9FA2F62DADE3B /* PersistenceAndDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433C82398CD041B7F18190A1 /* PersistenceAndDecodingTests.swift */; };
+		4D31AE1CFC234362616391A8 /* EduGamesShellRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1DE997DD60BD551D663D584 /* EduGamesShellRootView.swift */; };
+		547F76A2AA40CD2B8F2D1771 /* EduGamesShellApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52166A4F35AAA5C48B87E936 /* EduGamesShellApp.swift */; };
+		57F97999BBA0C031313FC744 /* AppDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF278655A21C796AEA351645 /* AppDataStore.swift */; };
+		678B58FA93E4B8F453AB0347 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F43652D493A0E27F9B4EB134 /* libsqlite3.tbd */; };
+		6AC2DF6D8B1395728AE79FC3 /* EduGamesShellCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44B9EEABE0CA13C1BB9CC0FE /* EduGamesShellCore.framework */; };
+		6C900DE63796AB22695D2436 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EF6D2C39421086C5539437B /* AppModel.swift */; };
+		75B099A68D817853F1B064CB /* ProfilePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF10EC35BFCCA10BE99CD7D4 /* ProfilePickerView.swift */; };
+		775B50D284C9C87D92A30CAE /* PlatformAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFCC33F8B19F675F21D9C634 /* PlatformAPIClient.swift */; };
+		77CA9FE1D80EF0A42049D4C1 /* BootstrapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61ABB154D0A82EF0021C0562 /* BootstrapView.swift */; };
+		788CEF1CA21F380C5A57DDC2 /* EduGamesAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067E75E0DFEC8A61694E3890 /* EduGamesAppUITests.swift */; };
+		8BAAF4FEFED667B655DB2E8F /* BootstrapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D88844272F91C67F4FB1643 /* BootstrapService.swift */; };
+		A08B9DD05C9219AD59136364 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B340F97D6E7580D2A049094F /* CatalogView.swift */; };
+		E1CBCAF8C2304B944AFEF81A /* PlatformModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 973DE612FB172320B29AEEAC /* PlatformModels.swift */; };
+		EF97C67EB86934C49D91014D /* EduGamesShellCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44B9EEABE0CA13C1BB9CC0FE /* EduGamesShellCore.framework */; };
+		FA614D7A36855DA65218E9B2 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C009075234C80F121AF5D60 /* WebKit.framework */; };
+		FB300F5D8F2AE522D13ABACD /* BootstrapServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C8D5F40BEA7A89C81C504 /* BootstrapServiceTests.swift */; };
+		FB5755303E0A47AC8BBEBF67 /* PlatformAPIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C33CF68BD1ADC1E0F80520E /* PlatformAPIClientTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		465F997E29EA234CA86F1E28 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 68A473845C0F10B7A26DA02D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4F47A9868A09F7F66B32DCE1;
+			remoteInfo = EduGamesApp;
+		};
+		D2CCC0C7B93C86A59ABB98D0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 68A473845C0F10B7A26DA02D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0BD3ECADCB463049132D54AB;
+			remoteInfo = EduGamesShellCore;
+		};
+		F9ECD01BED3BC5302A1BD5C9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 68A473845C0F10B7A26DA02D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0BD3ECADCB463049132D54AB;
+			remoteInfo = EduGamesShellCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		067E75E0DFEC8A61694E3890 /* EduGamesAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EduGamesAppUITests.swift; sourceTree = "<group>"; };
+		0C009075234C80F121AF5D60 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		2015C078A374D7EC8EC2EEB6 /* EduGamesAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = EduGamesAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D88844272F91C67F4FB1643 /* BootstrapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootstrapService.swift; sourceTree = "<group>"; };
+		433C82398CD041B7F18190A1 /* PersistenceAndDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceAndDecodingTests.swift; sourceTree = "<group>"; };
+		44B9EEABE0CA13C1BB9CC0FE /* EduGamesShellCore.framework */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.framework; path = EduGamesShellCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		52166A4F35AAA5C48B87E936 /* EduGamesShellApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EduGamesShellApp.swift; sourceTree = "<group>"; };
+		5EF6D2C39421086C5539437B /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		61ABB154D0A82EF0021C0562 /* BootstrapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootstrapView.swift; sourceTree = "<group>"; };
+		68F8B6CC021541368EAAA5DA /* EduGamesAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = EduGamesAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7D0C8D5F40BEA7A89C81C504 /* BootstrapServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootstrapServiceTests.swift; sourceTree = "<group>"; };
+		8C33CF68BD1ADC1E0F80520E /* PlatformAPIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAPIClientTests.swift; sourceTree = "<group>"; };
+		973DE612FB172320B29AEEAC /* PlatformModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformModels.swift; sourceTree = "<group>"; };
+		AA7FC302B6B27C9B1205963E /* EduGamesApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = EduGamesApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B340F97D6E7580D2A049094F /* CatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogView.swift; sourceTree = "<group>"; };
+		CF10EC35BFCCA10BE99CD7D4 /* ProfilePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePickerView.swift; sourceTree = "<group>"; };
+		DB7E20D83583210BB4F865FD /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		EAEC5FEFE7D3FD2B6358B3F7 /* AppModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelTests.swift; sourceTree = "<group>"; };
+		F1DE997DD60BD551D663D584 /* EduGamesShellRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EduGamesShellRootView.swift; sourceTree = "<group>"; };
+		F43652D493A0E27F9B4EB134 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		FF278655A21C796AEA351645 /* AppDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDataStore.swift; sourceTree = "<group>"; };
+		FFCC33F8B19F675F21D9C634 /* PlatformAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAPIClient.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		02DAC2F2B492F2B685BDB7D7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6AC2DF6D8B1395728AE79FC3 /* EduGamesShellCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		220FD513D2D0367A50108C35 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A4F71B1F4A9B2FF5AC953CE /* Security.framework in Frameworks */,
+				FA614D7A36855DA65218E9B2 /* WebKit.framework in Frameworks */,
+				678B58FA93E4B8F453AB0347 /* libsqlite3.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0C695E37C737A4A2FF30A4A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EF97C67EB86934C49D91014D /* EduGamesShellCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		48EF5039A98F0D8F838D7F4A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AA7FC302B6B27C9B1205963E /* EduGamesApp.app */,
+				2015C078A374D7EC8EC2EEB6 /* EduGamesAppTests.xctest */,
+				68F8B6CC021541368EAAA5DA /* EduGamesAppUITests.xctest */,
+				44B9EEABE0CA13C1BB9CC0FE /* EduGamesShellCore.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		55BA8B232EC3B206B98DF78F /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				FFCC33F8B19F675F21D9C634 /* PlatformAPIClient.swift */,
+				973DE612FB172320B29AEEAC /* PlatformModels.swift */,
+				98078F2348A75EA29AFCA0EC /* Persistence */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		5DA94CBFE47E3259A3D5C616 /* ChildExperience */ = {
+			isa = PBXGroup;
+			children = (
+				A90CA01E581B6307202774D0 /* Catalog */,
+				BC0B672174E51BDB93073EDB /* Profiles */,
+			);
+			path = ChildExperience;
+			sourceTree = "<group>";
+		};
+		8038F2DBEE16C59F448EB084 /* EduGamesApp */ = {
+			isa = PBXGroup;
+			children = (
+				BD7131035427A547DB19E3F2 /* App */,
+				FA463E82E1821DFC4B27BAE4 /* Bootstrap */,
+				5DA94CBFE47E3259A3D5C616 /* ChildExperience */,
+				55BA8B232EC3B206B98DF78F /* Shared */,
+			);
+			path = EduGamesApp;
+			sourceTree = "<group>";
+		};
+		816312A4525D30F068D421AD = {
+			isa = PBXGroup;
+			children = (
+				8038F2DBEE16C59F448EB084 /* EduGamesApp */,
+				F4D74641AD32882F9AD32923 /* EduGamesAppTests */,
+				FAB443B9BB618F66A950D106 /* EduGamesAppUITests */,
+				B79C39C9E048326AA5626587 /* Frameworks */,
+				48EF5039A98F0D8F838D7F4A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		98078F2348A75EA29AFCA0EC /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				FF278655A21C796AEA351645 /* AppDataStore.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		A90CA01E581B6307202774D0 /* Catalog */ = {
+			isa = PBXGroup;
+			children = (
+				B340F97D6E7580D2A049094F /* CatalogView.swift */,
+			);
+			path = Catalog;
+			sourceTree = "<group>";
+		};
+		B79C39C9E048326AA5626587 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F43652D493A0E27F9B4EB134 /* libsqlite3.tbd */,
+				DB7E20D83583210BB4F865FD /* Security.framework */,
+				0C009075234C80F121AF5D60 /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BC0B672174E51BDB93073EDB /* Profiles */ = {
+			isa = PBXGroup;
+			children = (
+				CF10EC35BFCCA10BE99CD7D4 /* ProfilePickerView.swift */,
+			);
+			path = Profiles;
+			sourceTree = "<group>";
+		};
+		BD7131035427A547DB19E3F2 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				5EF6D2C39421086C5539437B /* AppModel.swift */,
+				52166A4F35AAA5C48B87E936 /* EduGamesShellApp.swift */,
+				F1DE997DD60BD551D663D584 /* EduGamesShellRootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		F4D74641AD32882F9AD32923 /* EduGamesAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				EAEC5FEFE7D3FD2B6358B3F7 /* AppModelTests.swift */,
+				7D0C8D5F40BEA7A89C81C504 /* BootstrapServiceTests.swift */,
+				433C82398CD041B7F18190A1 /* PersistenceAndDecodingTests.swift */,
+				8C33CF68BD1ADC1E0F80520E /* PlatformAPIClientTests.swift */,
+			);
+			path = EduGamesAppTests;
+			sourceTree = "<group>";
+		};
+		FA463E82E1821DFC4B27BAE4 /* Bootstrap */ = {
+			isa = PBXGroup;
+			children = (
+				2D88844272F91C67F4FB1643 /* BootstrapService.swift */,
+				61ABB154D0A82EF0021C0562 /* BootstrapView.swift */,
+			);
+			path = Bootstrap;
+			sourceTree = "<group>";
+		};
+		FAB443B9BB618F66A950D106 /* EduGamesAppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				067E75E0DFEC8A61694E3890 /* EduGamesAppUITests.swift */,
+			);
+			path = EduGamesAppUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0BD3ECADCB463049132D54AB /* EduGamesShellCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9DFCF6D5446C1480F0C348A0 /* Build configuration list for PBXNativeTarget "EduGamesShellCore" */;
+			buildPhases = (
+				0019C3C4F697CC9465CCDF64 /* Sources */,
+				220FD513D2D0367A50108C35 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EduGamesShellCore;
+			packageProductDependencies = (
+			);
+			productName = EduGamesShellCore;
+			productReference = 44B9EEABE0CA13C1BB9CC0FE /* EduGamesShellCore.framework */;
+			productType = "com.apple.product-type.framework.static";
+		};
+		4F47A9868A09F7F66B32DCE1 /* EduGamesApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE9B8F1AC712B0D4F23A1E39 /* Build configuration list for PBXNativeTarget "EduGamesApp" */;
+			buildPhases = (
+				F18E22509F401563036EA406 /* Sources */,
+				02DAC2F2B492F2B685BDB7D7 /* Frameworks */,
+				49D4758D84FA1724D7DB0175 /* Strip Extended Attributes Before Signing */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A4A24C28DE2A159098C142BC /* PBXTargetDependency */,
+			);
+			name = EduGamesApp;
+			packageProductDependencies = (
+			);
+			productName = EduGamesApp;
+			productReference = AA7FC302B6B27C9B1205963E /* EduGamesApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BD3EF8E05D1091EBD38065FA /* EduGamesAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 90BB0C0955E46EE3D87815C9 /* Build configuration list for PBXNativeTarget "EduGamesAppTests" */;
+			buildPhases = (
+				20FF0D662B6620B8CDD44207 /* Sources */,
+				E0C695E37C737A4A2FF30A4A /* Frameworks */,
+				5A52494272C3F207352BFE1E /* Strip Extended Attributes Before Signing */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8FF4AF6E1D47D976DC2EA333 /* PBXTargetDependency */,
+			);
+			name = EduGamesAppTests;
+			packageProductDependencies = (
+			);
+			productName = EduGamesAppTests;
+			productReference = 2015C078A374D7EC8EC2EEB6 /* EduGamesAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		CB7D50C63923EC8F4B7578C8 /* EduGamesAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B8540C257D193379AB15BE1 /* Build configuration list for PBXNativeTarget "EduGamesAppUITests" */;
+			buildPhases = (
+				59BA3D89243A88DE8C5F5303 /* Sources */,
+				A6FC360569FE3D8EC3707CF9 /* Strip Extended Attributes Before Signing */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				286D26AAA6179175E031B467 /* PBXTargetDependency */,
+			);
+			name = EduGamesAppUITests;
+			packageProductDependencies = (
+			);
+			productName = EduGamesAppUITests;
+			productReference = 68F8B6CC021541368EAAA5DA /* EduGamesAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		68A473845C0F10B7A26DA02D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					4F47A9868A09F7F66B32DCE1 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					CB7D50C63923EC8F4B7578C8 = {
+						TestTargetID = 4F47A9868A09F7F66B32DCE1;
+					};
+				};
+			};
+			buildConfigurationList = FF0F8946134415EE8FDC2AD4 /* Build configuration list for PBXProject "EduGamesApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 816312A4525D30F068D421AD;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 48EF5039A98F0D8F838D7F4A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4F47A9868A09F7F66B32DCE1 /* EduGamesApp */,
+				BD3EF8E05D1091EBD38065FA /* EduGamesAppTests */,
+				CB7D50C63923EC8F4B7578C8 /* EduGamesAppUITests */,
+				0BD3ECADCB463049132D54AB /* EduGamesShellCore */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		49D4758D84FA1724D7DB0175 /* Strip Extended Attributes Before Signing */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Strip Extended Attributes Before Signing";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -n \"${CODESIGNING_FOLDER_PATH:-}\" ] && [ -e \"${CODESIGNING_FOLDER_PATH}\" ]; then\n  /usr/bin/xattr -cr \"${CODESIGNING_FOLDER_PATH}\" || true\nfi\n";
+		};
+		5A52494272C3F207352BFE1E /* Strip Extended Attributes Before Signing */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Strip Extended Attributes Before Signing";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -n \"${CODESIGNING_FOLDER_PATH:-}\" ] && [ -e \"${CODESIGNING_FOLDER_PATH}\" ]; then\n  /usr/bin/xattr -cr \"${CODESIGNING_FOLDER_PATH}\" || true\nfi\n";
+		};
+		A6FC360569FE3D8EC3707CF9 /* Strip Extended Attributes Before Signing */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Strip Extended Attributes Before Signing";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -n \"${CODESIGNING_FOLDER_PATH:-}\" ] && [ -e \"${CODESIGNING_FOLDER_PATH}\" ]; then\n  /usr/bin/xattr -cr \"${CODESIGNING_FOLDER_PATH}\" || true\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0019C3C4F697CC9465CCDF64 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57F97999BBA0C031313FC744 /* AppDataStore.swift in Sources */,
+				6C900DE63796AB22695D2436 /* AppModel.swift in Sources */,
+				8BAAF4FEFED667B655DB2E8F /* BootstrapService.swift in Sources */,
+				77CA9FE1D80EF0A42049D4C1 /* BootstrapView.swift in Sources */,
+				A08B9DD05C9219AD59136364 /* CatalogView.swift in Sources */,
+				4D31AE1CFC234362616391A8 /* EduGamesShellRootView.swift in Sources */,
+				775B50D284C9C87D92A30CAE /* PlatformAPIClient.swift in Sources */,
+				E1CBCAF8C2304B944AFEF81A /* PlatformModels.swift in Sources */,
+				75B099A68D817853F1B064CB /* ProfilePickerView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		20FF0D662B6620B8CDD44207 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3D1D7B1643F99E980061994F /* AppModelTests.swift in Sources */,
+				FB300F5D8F2AE522D13ABACD /* BootstrapServiceTests.swift in Sources */,
+				3EF2F8CD96D9FA2F62DADE3B /* PersistenceAndDecodingTests.swift in Sources */,
+				FB5755303E0A47AC8BBEBF67 /* PlatformAPIClientTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		59BA3D89243A88DE8C5F5303 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				788CEF1CA21F380C5A57DDC2 /* EduGamesAppUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F18E22509F401563036EA406 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				547F76A2AA40CD2B8F2D1771 /* EduGamesShellApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		286D26AAA6179175E031B467 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4F47A9868A09F7F66B32DCE1 /* EduGamesApp */;
+			targetProxy = 465F997E29EA234CA86F1E28 /* PBXContainerItemProxy */;
+		};
+		8FF4AF6E1D47D976DC2EA333 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0BD3ECADCB463049132D54AB /* EduGamesShellCore */;
+			targetProxy = F9ECD01BED3BC5302A1BD5C9 /* PBXContainerItemProxy */;
+		};
+		A4A24C28DE2A159098C142BC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0BD3ECADCB463049132D54AB /* EduGamesShellCore */;
+			targetProxy = D2CCC0C7B93C86A59ABB98D0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		29A23DB387BC2398DEA6F31F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]" = NO;
+				"CODE_SIGNING_REQUIRED[sdk=iphonesimulator*]" = NO;
+				"CODE_SIGN_IDENTITY[sdk=iphonesimulator*]" = "";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		4DCEAEF52D7CF909944E788C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = EduGamesApp/Support/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.edugames.shell;
+				PRODUCT_NAME = EduGamesApp;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Release;
+		};
+		58FE41E2289C0E3DB9344C93 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = EduGamesApp/Support/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.edugames.shell.core;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		5F6B85D805A56F7AD05A172D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.edugames.shell.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "";
+			};
+			name = Release;
+		};
+		72DEC26B7E84BE2CC1FB8D92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = EduGamesApp/Support/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.edugames.shell;
+				PRODUCT_NAME = EduGamesApp;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		7D0DB44BE8089E2E76D2A9D5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.edugames.shell.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = EduGamesApp;
+			};
+			name = Debug;
+		};
+		A54C7B62F8487594AF7AF12E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.edugames.shell.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = EduGamesApp;
+			};
+			name = Release;
+		};
+		C014B2916B969745096FF933 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = EduGamesApp/Support/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.edugames.shell.core;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		EDBA1A0E4FABBEE5A5D70338 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.edugames.shell.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "";
+			};
+			name = Debug;
+		};
+		F6DD6B533DFCB1B5D082050D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]" = NO;
+				"CODE_SIGNING_REQUIRED[sdk=iphonesimulator*]" = NO;
+				"CODE_SIGN_IDENTITY[sdk=iphonesimulator*]" = "";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0B8540C257D193379AB15BE1 /* Build configuration list for PBXNativeTarget "EduGamesAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7D0DB44BE8089E2E76D2A9D5 /* Debug */,
+				A54C7B62F8487594AF7AF12E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		90BB0C0955E46EE3D87815C9 /* Build configuration list for PBXNativeTarget "EduGamesAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EDBA1A0E4FABBEE5A5D70338 /* Debug */,
+				5F6B85D805A56F7AD05A172D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9DFCF6D5446C1480F0C348A0 /* Build configuration list for PBXNativeTarget "EduGamesShellCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				58FE41E2289C0E3DB9344C93 /* Debug */,
+				C014B2916B969745096FF933 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CE9B8F1AC712B0D4F23A1E39 /* Build configuration list for PBXNativeTarget "EduGamesApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				72DEC26B7E84BE2CC1FB8D92 /* Debug */,
+				4DCEAEF52D7CF909944E788C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FF0F8946134415EE8FDC2AD4 /* Build configuration list for PBXProject "EduGamesApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				29A23DB387BC2398DEA6F31F /* Debug */,
+				F6DD6B533DFCB1B5D082050D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 68A473845C0F10B7A26DA02D /* Project object */;
+}

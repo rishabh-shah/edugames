@@ -1,0 +1,104 @@
+name: EduGamesApp
+options:
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    "CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]": NO
+    "CODE_SIGNING_REQUIRED[sdk=iphonesimulator*]": NO
+    "CODE_SIGN_IDENTITY[sdk=iphonesimulator*]": ""
+targets:
+  EduGamesShellCore:
+    type: framework.static
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: EduGamesApp
+        excludes:
+          - App/EduGamesShellApp.swift
+          - Support/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.edugames.shell.core
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - sdk: Security.framework
+      - sdk: WebKit.framework
+      - sdk: libsqlite3.tbd
+  EduGamesApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: EduGamesApp/App/EduGamesShellApp.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.edugames.shell
+        PRODUCT_NAME: EduGamesApp
+        TARGETED_DEVICE_FAMILY: "2"
+        INFOPLIST_FILE: EduGamesApp/Support/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 0.1.0
+    dependencies:
+      - target: EduGamesShellCore
+    postBuildScripts:
+      - name: Strip Extended Attributes Before Signing
+        script: |
+          if [ -n "${CODESIGNING_FOLDER_PATH:-}" ] && [ -e "${CODESIGNING_FOLDER_PATH}" ]; then
+            /usr/bin/xattr -cr "${CODESIGNING_FOLDER_PATH}" || true
+          fi
+  EduGamesAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: EduGamesAppTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.edugames.shell.tests
+        GENERATE_INFOPLIST_FILE: YES
+        BUNDLE_LOADER: ""
+        TEST_HOST: ""
+    dependencies:
+      - target: EduGamesShellCore
+    postBuildScripts:
+      - name: Strip Extended Attributes Before Signing
+        script: |
+          if [ -n "${CODESIGNING_FOLDER_PATH:-}" ] && [ -e "${CODESIGNING_FOLDER_PATH}" ]; then
+            /usr/bin/xattr -cr "${CODESIGNING_FOLDER_PATH}" || true
+          fi
+  EduGamesAppUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: EduGamesAppUITests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.edugames.shell.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: EduGamesApp
+    dependencies:
+      - target: EduGamesApp
+    postBuildScripts:
+      - name: Strip Extended Attributes Before Signing
+        script: |
+          if [ -n "${CODESIGNING_FOLDER_PATH:-}" ] && [ -e "${CODESIGNING_FOLDER_PATH}" ]; then
+            /usr/bin/xattr -cr "${CODESIGNING_FOLDER_PATH}" || true
+          fi
+schemes:
+  EduGamesApp:
+    build:
+      targets:
+        EduGamesShellCore: all
+        EduGamesApp: all
+        EduGamesAppTests: [test]
+        EduGamesAppUITests: [test]
+    test:
+      gatherCoverageData: true
+      targets:
+        - name: EduGamesAppTests
+        - name: EduGamesAppUITests
