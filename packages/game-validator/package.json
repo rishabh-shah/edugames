@@ -1,0 +1,13 @@
+{
+  "name": "@edugames/game-validator",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "EduGames game validator placeholder workspace.",
+  "scripts": {
+    "build": "node ../../scripts/placeholder-task.mjs @edugames/game-validator build",
+    "test": "vitest run tests/smoke.test.js",
+    "lint": "node ../../scripts/placeholder-task.mjs @edugames/game-validator lint",
+    "typecheck": "node ../../scripts/placeholder-task.mjs @edugames/game-validator typecheck"
+  }
+}

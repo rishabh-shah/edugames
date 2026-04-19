@@ -1,0 +1,21 @@
+.DS_Store
+node_modules/
+.pnpm-store/
+dist/
+coverage/
+playwright-report/
+test-results/
+.cache/
+.turbo/
+tmp/
+*.log
+
+# macOS / Xcode
+DerivedData/
+*.xcuserdatad/
+*.xcuserstate
+
+# Local environment files
+.env
+.env.*
+!.env.example

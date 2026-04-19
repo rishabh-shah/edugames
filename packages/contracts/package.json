@@ -1,0 +1,13 @@
+{
+  "name": "@edugames/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "EduGames shared contracts placeholder workspace.",
+  "scripts": {
+    "build": "node ../../scripts/placeholder-task.mjs @edugames/contracts build",
+    "test": "vitest run tests/smoke.test.js",
+    "lint": "node ../../scripts/placeholder-task.mjs @edugames/contracts lint",
+    "typecheck": "node ../../scripts/placeholder-task.mjs @edugames/contracts typecheck"
+  }
+}

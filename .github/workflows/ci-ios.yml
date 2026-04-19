@@ -1,0 +1,39 @@
+name: ci-ios
+
+on:
+  pull_request:
+    paths:
+      - "apps/ios-shell/**"
+      - ".github/workflows/ci-ios.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-ios-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Detect Xcode project
+        id: detect
+        run: |
+          if find apps/ios-shell \( -name "*.xcodeproj" -o -name "*.xcworkspace" \) | grep -q .; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bootstrap notice
+        if: steps.detect.outputs.present == 'false'
+        run: echo "No Xcode project yet. iOS CI will become strict once apps/ios-shell is scaffolded."
+
+      - name: Placeholder iOS validation
+        if: steps.detect.outputs.present == 'true'
+        run: echo "Replace with xcodebuild and simulator test commands once the iOS shell exists."

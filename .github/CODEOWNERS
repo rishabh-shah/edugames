@@ -1,0 +1,9 @@
+# Replace this bootstrap owner mapping with your final maintainer list.
+* @rishabh-shah
+
+/apps/ios-shell/ @rishabh-shah
+/services/api/ @rishabh-shah
+/services/worker/ @rishabh-shah
+/packages/ @rishabh-shah
+/.github/ @rishabh-shah
+/docs/ @rishabh-shah

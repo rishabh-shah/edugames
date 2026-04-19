@@ -1,0 +1,13 @@
+{
+  "name": "@edugames/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "EduGames API placeholder workspace.",
+  "scripts": {
+    "build": "node ../../scripts/placeholder-task.mjs @edugames/api build",
+    "test": "vitest run tests/smoke.test.js",
+    "lint": "node ../../scripts/placeholder-task.mjs @edugames/api lint",
+    "typecheck": "node ../../scripts/placeholder-task.mjs @edugames/api typecheck"
+  }
+}

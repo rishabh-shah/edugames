@@ -1,0 +1,13 @@
+{
+  "name": "@edugames/shape-match",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "EduGames shape-match game placeholder workspace.",
+  "scripts": {
+    "build": "node ../../scripts/placeholder-task.mjs @edugames/shape-match build",
+    "test": "vitest run tests/smoke.test.js",
+    "lint": "node ../../scripts/placeholder-task.mjs @edugames/shape-match lint",
+    "typecheck": "node ../../scripts/placeholder-task.mjs @edugames/shape-match typecheck"
+  }
+}

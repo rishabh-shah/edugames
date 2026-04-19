@@ -1,0 +1,31 @@
+name: Feature request
+description: Propose a new platform capability.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user or platform problem are we solving?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the intended behavior and the likely affected areas.
+    validations:
+      required: true
+  - type: textarea
+    id: testing
+    attributes:
+      label: Testing expectations
+      description: Which unit, integration, E2E, and visual checks should ship with this work?
