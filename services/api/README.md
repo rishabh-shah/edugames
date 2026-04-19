@@ -2,6 +2,11 @@
 
 Purpose: Backend HTTP service for catalog delivery, launch flows, review operations, and platform APIs.
 
-Initial scaffold:
-- `src/` holds the future Fastify entry point and domain modules.
-- `tests/` holds lightweight workspace smoke coverage until shared tooling lands.
+Current scope:
+- Fastify app with installation register/refresh and profile lifecycle endpoints.
+- In-memory persistence for the first API slice.
+- Signed installation access tokens and rotated refresh tokens.
+
+Testing:
+- unit tests cover token logic and service behavior.
+- integration tests use Fastify injection across the live routes.

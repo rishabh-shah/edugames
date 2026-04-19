@@ -56,6 +56,7 @@ This repository is being scaffolded in phases.
 - Root workspace and CI/test conventions are present.
 - Package and app placeholders are intentionally lightweight.
 - `apps/ios-shell` remains docs-only until full Xcode is installed and selected.
+- Root Vitest workspace configuration lives in `vitest.workspace.ts`.
 
 ## Useful commands
 

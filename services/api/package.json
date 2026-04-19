@@ -1,13 +1,23 @@
 {
   "name": "@edugames/api",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "EduGames API placeholder workspace.",
+  "description": "EduGames Fastify API service.",
   "scripts": {
-    "build": "node ../../scripts/placeholder-task.mjs @edugames/api build",
-    "test": "vitest run tests/smoke.test.js",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "dev": "tsx watch src/server.ts",
+    "predev": "pnpm --filter @edugames/contracts build",
+    "start": "node dist/server.js",
+    "prestart": "pnpm --filter @edugames/contracts build",
+    "test": "vitest run --config vitest.config.ts --configLoader runner",
+    "test:integration": "vitest run tests/routes.integration.test.ts --config vitest.config.ts --configLoader runner",
     "lint": "node ../../scripts/placeholder-task.mjs @edugames/api lint",
-    "typecheck": "node ../../scripts/placeholder-task.mjs @edugames/api typecheck"
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@edugames/contracts": "workspace:*",
+    "fastify": "^5.6.1",
+    "zod": "^3.25.76"
   }
 }

@@ -1,4 +1,5 @@
-export const apiScaffold = {
-  workspace: "api",
-  purpose: "HTTP service scaffold for EduGames domain APIs and operational endpoints.",
-};
+export * from "./app.js";
+export * from "./config.js";
+export * from "./repositories/in-memory-platform-repository.js";
+export * from "./services/installations-service.js";
+export * from "./services/profiles-service.js";

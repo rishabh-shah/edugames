@@ -1,13 +1,24 @@
 {
   "name": "@edugames/contracts",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "EduGames shared contracts placeholder workspace.",
+  "description": "EduGames shared contracts package.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "build": "node ../../scripts/placeholder-task.mjs @edugames/contracts build",
-    "test": "vitest run tests/smoke.test.js",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "test": "vitest run tests/contracts.test.ts --config vitest.config.ts --configLoader runner",
     "lint": "node ../../scripts/placeholder-task.mjs @edugames/contracts lint",
-    "typecheck": "node ../../scripts/placeholder-task.mjs @edugames/contracts typecheck"
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
   }
 }

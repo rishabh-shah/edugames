@@ -1,4 +1,10 @@
-export const contractsScaffold = {
-  workspace: "contracts",
-  purpose: "Shared contract entry point for manifests, APIs, and telemetry schemas.",
-};
+export * from "./age-bands.js";
+export * from "./catalog.js";
+export * from "./common.js";
+export * from "./installations.js";
+export * from "./launch.js";
+export * from "./manifest.js";
+export * from "./openapi.js";
+export * from "./profiles.js";
+export * from "./reports.js";
+export * from "./telemetry.js";
