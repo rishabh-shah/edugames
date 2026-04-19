@@ -11,6 +11,15 @@ const createFallbackLocalStorage = () => {
   };
 };
 
+const createBridgeStateStore = (bridge) => ({
+  async load() {
+    return bridge.loadState();
+  },
+  async save(state) {
+    await bridge.saveState(state);
+  }
+});
+
 const createLocalStateStore = (globalObject, gameId) => {
   const storage = globalObject?.localStorage ?? createFallbackLocalStorage();
   const key = `edugames:${gameId}:save-state`;
@@ -29,6 +38,16 @@ const createLocalStateStore = (globalObject, gameId) => {
       storage.setItem(key, JSON.stringify(state));
     }
   };
+};
+
+const createStateStore = (globalObject, gameId) => {
+  const bridge = globalObject?.eduGamesBridge;
+
+  if (bridge?.loadState && bridge?.saveState) {
+    return createBridgeStateStore(bridge);
+  }
+
+  return createLocalStateStore(globalObject, gameId);
 };
 
 const createMessageTransport = (globalObject) => {
@@ -60,7 +79,7 @@ const createMessageTransport = (globalObject) => {
 export const createEduGameSdk = ({
   gameId,
   globalObject = globalThis,
-  storage = createLocalStateStore(globalObject, gameId),
+  storage = createStateStore(globalObject, gameId),
   transport = createMessageTransport(globalObject)
 }) => {
   if (!gameId) {

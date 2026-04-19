@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createShapeMatchApp } from "../src/main.js";
+import { createEduGameSdk } from "../src/vendor/edugames-sdk.js";
 
 const createCanvasContext = () => ({
   clearRect() {},
@@ -42,7 +43,7 @@ const createButton = () => {
   };
 };
 
-const createEnvironment = () => {
+const createEnvironment = ({ bridge = null, storageSeed = {} } = {}) => {
   const canvasListeners = new Map();
   const canvas = {
     width: 1280,
@@ -108,6 +109,16 @@ const createEnvironment = () => {
       listeners.set(type, handler);
     }
   };
+  const storage = new Map(Object.entries(storageSeed));
+  const parentMessages = [];
+  const localStorage = {
+    getItem(key) {
+      return storage.has(key) ? storage.get(key) : null;
+    },
+    setItem(key, value) {
+      storage.set(key, value);
+    }
+  };
   const windowObject = {
     addEventListener(type, handler) {
       listeners.set(type, handler);
@@ -120,13 +131,13 @@ const createEnvironment = () => {
       return 1;
     },
     cancelAnimationFrame() {},
-    parent: null,
-    localStorage: {
-      getItem() {
-        return null;
-      },
-      setItem() {}
-    }
+    parent: {
+      postMessage(message) {
+        parentMessages.push(message);
+      }
+    },
+    localStorage,
+    eduGamesBridge: bridge
   };
 
   return {
@@ -140,7 +151,10 @@ const createEnvironment = () => {
     promptNode,
     restartButton,
     startButton,
+    localStorage,
+    parentMessages,
     statusNode,
+    storage,
     targetsNode,
     windowObject
   };
@@ -148,46 +162,27 @@ const createEnvironment = () => {
 
 describe("shape-match runtime wiring", () => {
   it("boots the app, reports readiness, and exposes text hooks", async () => {
-    const env = createEnvironment();
-    const transportMessages = [];
-    const saveStates = [];
+    const env = createEnvironment({
+      storageSeed: {
+        "edugames:shape-match:save-state": JSON.stringify({
+          bestSessionStars: 3,
+          sessionsCompleted: 1
+        })
+      }
+    });
+    const sdk = createEduGameSdk({
+      gameId: "shape-match",
+      globalObject: env.windowObject
+    });
     const app = createShapeMatchApp({
       documentObject: env.documentObject,
       windowObject: env.windowObject,
-      sdk: {
-        async loadState() {
-          return {
-            bestSessionStars: 3,
-            sessionsCompleted: 1
-          };
-        },
-        ready(metadata) {
-          transportMessages.push({
-            type: "ready",
-            metadata
-          });
-        },
-        emitEvent(name, value) {
-          transportMessages.push({
-            type: "event",
-            name,
-            value
-          });
-        },
-        async saveState(state) {
-          saveStates.push(state);
-        },
-        requestExit() {
-          transportMessages.push({
-            type: "request-exit"
-          });
-        }
-      }
+      sdk
     });
 
     await app.init();
 
-    expect(transportMessages[0]).toMatchObject({
+    expect(env.parentMessages[0]).toMatchObject({
       type: "ready"
     });
     expect(typeof env.windowObject.render_game_to_text).toBe("function");
@@ -199,6 +194,7 @@ describe("shape-match runtime wiring", () => {
     expect(JSON.parse(env.targetsNode.dataset.targets)).toHaveLength(2);
     expect(env.completionNode.dataset.visible).toBe("false");
     expect(env.windowObject.__shapeMatchState.mode).toBe("intro");
+    expect(env.windowObject.__shapeMatchState.bestSessionStars).toBe(3);
     expect(env.statusNode.textContent).toMatch(/tap start/i);
 
     env.startButton.click();
@@ -207,7 +203,7 @@ describe("shape-match runtime wiring", () => {
     app.chooseTrayShape("square");
     app.placeOnTarget("target-square");
 
-    expect(saveStates.at(-1)).toMatchObject({
+    expect(JSON.parse(env.localStorage.getItem("edugames:shape-match:save-state"))).toMatchObject({
       bestSessionStars: 3,
       sessionsCompleted: 1
     });
@@ -239,8 +235,97 @@ describe("shape-match runtime wiring", () => {
     expect(env.windowObject.__shapeMatchState.mode).toBe("complete");
 
     env.exitButton.click();
-    expect(transportMessages.at(-1)).toEqual({
-      type: "request-exit"
+    expect(env.parentMessages.at(-1)).toMatchObject({
+      type: "request-exit",
+      gameId: "shape-match",
+      source: "edugames-game"
+    });
+  });
+
+  it("uses the native bridge when it is available", async () => {
+    const bridgeLoadCalls = [];
+    const bridgeSaveCalls = [];
+    const env = createEnvironment({
+      bridge: {
+        async loadState() {
+          bridgeLoadCalls.push("load");
+          return {
+            bestSessionStars: 4,
+            sessionsCompleted: 2
+          };
+        },
+        async saveState(state) {
+          bridgeSaveCalls.push(state);
+        }
+      },
+      storageSeed: {
+        "edugames:shape-match:save-state": JSON.stringify({
+          bestSessionStars: 1,
+          sessionsCompleted: 9
+        })
+      }
+    });
+    const sdk = createEduGameSdk({
+      gameId: "shape-match",
+      globalObject: env.windowObject
+    });
+    const app = createShapeMatchApp({
+      documentObject: env.documentObject,
+      windowObject: env.windowObject,
+      sdk
+    });
+
+    await app.init();
+
+    expect(bridgeLoadCalls).toEqual(["load"]);
+    expect(env.localStorage.getItem("edugames:shape-match:save-state")).toBe(
+      JSON.stringify({
+        bestSessionStars: 1,
+        sessionsCompleted: 9
+      })
+    );
+    expect(env.windowObject.__shapeMatchState.bestSessionStars).toBe(4);
+
+    env.startButton.click();
+
+    expect(bridgeSaveCalls.at(-1)).toMatchObject({
+      bestSessionStars: 4,
+      sessionsCompleted: 2
+    });
+  });
+
+  it("falls back to localStorage when the bridge is absent", async () => {
+    const env = createEnvironment({
+      storageSeed: {
+        "edugames:shape-match:save-state": JSON.stringify({
+          bestSessionStars: 6,
+          sessionsCompleted: 5
+        })
+      }
+    });
+    delete env.windowObject.eduGamesBridge;
+    const sdk = createEduGameSdk({
+      gameId: "shape-match",
+      globalObject: env.windowObject
+    });
+
+    expect(await sdk.loadState()).toEqual({
+      bestSessionStars: 6,
+      sessionsCompleted: 5
+    });
+
+    await sdk.saveState({
+      bestSessionStars: 7,
+      sessionsCompleted: 6
+    });
+
+    expect(JSON.parse(env.localStorage.getItem("edugames:shape-match:save-state"))).toEqual({
+      bestSessionStars: 7,
+      sessionsCompleted: 6
+    });
+    expect(env.parentMessages.at(-1)).toMatchObject({
+      type: "save-state",
+      gameId: "shape-match"
     });
   });
 });
