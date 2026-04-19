@@ -13,6 +13,16 @@ protocol PlatformAPIClient {
     session: InstallationSession,
     profileId: String
   ) async throws -> CatalogResponse
+  func fetchGameDetail(
+    session: InstallationSession,
+    profileId: String,
+    slug: String
+  ) async throws -> GameDetailResponse
+  func createLaunchSession(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String
+  ) async throws -> LaunchSessionResponse
 }
 
 struct InstallationRegistrationContext: Equatable, Sendable {
@@ -56,6 +66,22 @@ final class FixturePlatformAPIClient: PlatformAPIClient {
     profileId: String
   ) async throws -> CatalogResponse {
     CatalogResponse.sample
+  }
+
+  func fetchGameDetail(
+    session: InstallationSession,
+    profileId: String,
+    slug: String
+  ) async throws -> GameDetailResponse {
+    GameDetailResponse.sample
+  }
+
+  func createLaunchSession(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String
+  ) async throws -> LaunchSessionResponse {
+    LaunchSessionResponse.fixture
   }
 }
 
@@ -125,25 +151,43 @@ final class LivePlatformAPIClient: PlatformAPIClient {
     session: InstallationSession,
     profileId: String
   ) async throws -> CatalogResponse {
-    var components = URLComponents(
-      url: baseURL.appending(path: "/v1/catalog"),
-      resolvingAgainstBaseURL: false
+    try await get(
+      path: "/v1/catalog",
+      queryItems: [
+        URLQueryItem(name: "profileId", value: profileId)
+      ],
+      accessToken: session.accessToken
     )
-    components?.queryItems = [
-      URLQueryItem(name: "profileId", value: profileId)
-    ]
+  }
 
-    guard let url = components?.url else {
-      throw LivePlatformAPIClientError.invalidURL
-    }
+  func fetchGameDetail(
+    session: InstallationSession,
+    profileId: String,
+    slug: String
+  ) async throws -> GameDetailResponse {
+    try await get(
+      path: "/v1/games/\(slug)",
+      queryItems: [
+        URLQueryItem(name: "profileId", value: profileId)
+      ],
+      accessToken: session.accessToken
+    )
+  }
 
-    var request = URLRequest(url: url)
-    request.httpMethod = "GET"
-    request.setValue("Bearer \(session.accessToken)", forHTTPHeaderField: "Authorization")
-
-    let (data, response) = try await urlSession.data(for: request)
-    try validate(response: response, data: data)
-    return try JSONDecoder().decode(CatalogResponse.self, from: data)
+  func createLaunchSession(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String
+  ) async throws -> LaunchSessionResponse {
+    try await send(
+      path: "/v1/launch-sessions",
+      method: "POST",
+      requestBody: CreateLaunchSessionRequest(
+        profileId: profileId,
+        gameId: gameId
+      ),
+      accessToken: session.accessToken
+    )
   }
 
   private func send<RequestBody: Encodable, ResponseBody: Decodable>(
@@ -161,6 +205,30 @@ final class LivePlatformAPIClient: PlatformAPIClient {
     }
 
     request.httpBody = try JSONEncoder().encode(requestBody)
+
+    let (data, response) = try await urlSession.data(for: request)
+    try validate(response: response, data: data)
+    return try JSONDecoder().decode(ResponseBody.self, from: data)
+  }
+
+  private func get<ResponseBody: Decodable>(
+    path: String,
+    queryItems: [URLQueryItem],
+    accessToken: String
+  ) async throws -> ResponseBody {
+    var components = URLComponents(
+      url: baseURL.appending(path: path),
+      resolvingAgainstBaseURL: false
+    )
+    components?.queryItems = queryItems
+
+    guard let url = components?.url else {
+      throw LivePlatformAPIClientError.invalidURL
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
     let (data, response) = try await urlSession.data(for: request)
     try validate(response: response, data: data)
@@ -217,4 +285,47 @@ private struct CreateProfileRequest: Encodable {
 
 private struct CreateProfileResponse: Decodable {
   let profile: ChildProfile
+}
+
+private struct CreateLaunchSessionRequest: Encodable {
+  let profileId: String
+  let gameId: String
+}
+
+@MainActor
+final class GameRuntimeLaunchService {
+  private let apiClient: PlatformAPIClient
+  private let bundleInstallService: BundleInstallService
+
+  init(
+    apiClient: PlatformAPIClient,
+    bundleInstallService: BundleInstallService
+  ) {
+    self.apiClient = apiClient
+    self.bundleInstallService = bundleInstallService
+  }
+
+  func prepareLaunch(
+    session: InstallationSession,
+    request: GameLaunchRequest
+  ) async throws -> GameLaunchDetails {
+    let detail = try await apiClient.fetchGameDetail(
+      session: session,
+      profileId: request.profileId,
+      slug: request.slug
+    )
+    let launchSession = try await apiClient.createLaunchSession(
+      session: session,
+      profileId: request.profileId,
+      gameId: request.gameId
+    )
+    let installedBundle = try bundleInstallService.installBundle(from: launchSession)
+
+    return GameLaunchDetails(
+      request: request,
+      detail: detail,
+      launchSession: launchSession,
+      installedBundle: installedBundle
+    )
+  }
 }

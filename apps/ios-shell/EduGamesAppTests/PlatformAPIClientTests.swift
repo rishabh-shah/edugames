@@ -119,6 +119,115 @@ final class PlatformAPIClientTests: XCTestCase {
     XCTAssertEqual(queryItems?.first(where: { $0.name == "profileId" })?.value, "prof_live_01")
   }
 
+  func testFetchGameDetailUsesSlugPathAndProfileQuery() async throws {
+    let recorder = HTTPRequestRecorder()
+    let responseBody = """
+    {
+      "gameId": "shape-match",
+      "slug": "shape-match",
+      "title": "Shape Match",
+      "summary": "Match circles, squares, and triangles.",
+      "description": "A simple recognition game for preschoolers.",
+      "version": "1.0.0",
+      "ageBand": "PRESCHOOL_3_5",
+      "screenshots": [
+        "https://cdn.example/games/shape-match/1.0.0/assets/ss-1.png"
+      ],
+      "categories": ["shapes", "visual-recognition"],
+      "offlineReady": true,
+      "contentFlags": {
+        "externalLinks": false,
+        "ugc": false,
+        "chat": false,
+        "ads": false,
+        "purchases": false
+      }
+    }
+    """.data(using: .utf8)!
+
+    let client = await makeClient(
+      recorder: recorder,
+      response: .json(statusCode: 200, body: responseBody)
+    )
+    let session = InstallationSession(
+      installationId: "inst_live_01",
+      accessToken: "access_token_abcdefghijklmnopqrstuvwxyz1234",
+      refreshToken: "refresh_token_abcdefghijklmnopqrstuvwxyz5678"
+    )
+
+    let detail = try await client.fetchGameDetail(
+      session: session,
+      profileId: "prof_live_01",
+      slug: "shape-match"
+    )
+
+    let request = try XCTUnwrap(recorder.lastRequest)
+    let queryItems = URLComponents(
+      url: try XCTUnwrap(request.url),
+      resolvingAgainstBaseURL: false
+    )?.queryItems
+
+    XCTAssertEqual(detail.gameId, "shape-match")
+    XCTAssertEqual(detail.slug, "shape-match")
+    XCTAssertEqual(request.url?.path, "/v1/games/shape-match")
+    XCTAssertEqual(request.httpMethod, "GET")
+    XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer \(session.accessToken)")
+    XCTAssertEqual(queryItems?.first(where: { $0.name == "profileId" })?.value, "prof_live_01")
+  }
+
+  func testCreateLaunchSessionUsesInstallationTokenAndRequestBody() async throws {
+    let recorder = HTTPRequestRecorder()
+    let responseBody = """
+    {
+      "launchSessionId": "ls_123abc",
+      "gameId": "shape-match",
+      "version": "1.0.0",
+      "bundle": {
+        "bundleUrl": "https://cdn.example/games/shape-match/1.0.0/bundle.zip",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "compressedSizeBytes": 4812031
+      },
+      "manifest": {
+        "entrypoint": "index.html",
+        "minAgeBand": "PRESCHOOL_3_5",
+        "maxAgeBand": "PRESCHOOL_3_5",
+        "allowedEvents": ["milestone:first-match", "milestone:round-complete"]
+      },
+      "cachePolicy": {
+        "revalidateAfterSeconds": 86400
+      }
+    }
+    """.data(using: .utf8)!
+
+    let client = await makeClient(
+      recorder: recorder,
+      response: .json(statusCode: 200, body: responseBody)
+    )
+    let session = InstallationSession(
+      installationId: "inst_live_01",
+      accessToken: "access_token_abcdefghijklmnopqrstuvwxyz1234",
+      refreshToken: "refresh_token_abcdefghijklmnopqrstuvwxyz5678"
+    )
+
+    let launch = try await client.createLaunchSession(
+      session: session,
+      profileId: "prof_live_01",
+      gameId: "shape-match"
+    )
+
+    let request = try XCTUnwrap(recorder.lastRequest)
+    let body = try requestBody(from: request)
+    let payload = try JSONDecoder().decode(CreateLaunchSessionPayload.self, from: body)
+
+    XCTAssertEqual(launch.launchSessionId, "ls_123abc")
+    XCTAssertEqual(launch.bundle.sha256, String(repeating: "a", count: 64))
+    XCTAssertEqual(request.url?.path, "/v1/launch-sessions")
+    XCTAssertEqual(request.httpMethod, "POST")
+    XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer \(session.accessToken)")
+    XCTAssertEqual(payload.profileId, "prof_live_01")
+    XCTAssertEqual(payload.gameId, "shape-match")
+  }
+
   private func makeClient(
     recorder: HTTPRequestRecorder,
     response: StubbedResponse,
@@ -283,4 +392,9 @@ private struct RegisterInstallationPayload: Decodable {
 private struct CreateProfilePayload: Decodable {
   let ageBand: String
   let avatarId: String
+}
+
+private struct CreateLaunchSessionPayload: Decodable {
+  let profileId: String
+  let gameId: String
 }

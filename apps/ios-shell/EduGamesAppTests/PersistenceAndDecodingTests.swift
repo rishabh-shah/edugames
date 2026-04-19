@@ -116,4 +116,79 @@ struct PersistenceAndDecodingTests {
     #expect(decoded.sections.count == 1)
     #expect(decoded.sections[0].items[0].title == "Shape Match Garden")
   }
+
+  @Test("bundle checksum verification fails closed on a mismatched archive")
+  func bundleChecksumVerificationFailsOnMismatch() throws {
+    let fixtureArchiveURL = try #require(
+      FixtureBundleResourceLocator.resourceURL(
+        named: "shape-match-fixture",
+        withExtension: "zip"
+      )
+    )
+    let verifier = BundleArchiveChecksumVerifier()
+
+    do {
+      try verifier.verifyArchive(
+        at: fixtureArchiveURL,
+        expectedSHA256: String(repeating: "0", count: 64)
+      )
+      Issue.record("Expected checksum verification to fail for a mismatched archive.")
+    } catch let error as BundleInstallError {
+      guard case .checksumMismatch(let expected, let actual) = error else {
+        Issue.record("Expected a checksum mismatch error, received \(error) instead.")
+        return
+      }
+
+      #expect(expected == String(repeating: "0", count: 64))
+      #expect(actual.count == 64)
+    }
+  }
+
+  @Test("fixture bundle install persists cache metadata and exposes a local entrypoint")
+  func fixtureBundleInstallPersistsCacheMetadata() throws {
+    let database = try AppDatabase()
+    let cacheRepository = SQLiteBundleCacheRepository(database: database)
+    let installRootURL = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let service = BundleInstallService(
+      cacheRepository: cacheRepository,
+      installRootURL: installRootURL
+    )
+    let launchSession = LaunchSessionResponse.fixture
+
+    let installedBundle = try service.installBundle(from: launchSession)
+    let cachedRecord = try cacheRepository.fetchRecord(
+      gameId: launchSession.gameId,
+      version: launchSession.version
+    )
+
+    #expect(FileManager.default.fileExists(atPath: installedBundle.entrypointURL.path))
+    #expect(installedBundle.entrypointURL.lastPathComponent == "index.html")
+    #expect(installedBundle.archiveURL.lastPathComponent == "shape-match-fixture.zip")
+    #expect(cachedRecord?.sha256 == launchSession.bundle.sha256)
+    #expect(cachedRecord?.entrypointRelativePath == launchSession.manifest.entrypoint)
+    #expect(cachedRecord?.sourceURL == launchSession.bundle.bundleURL.absoluteString)
+  }
+
+  @Test("SQLite save-state repository round-trips local game state")
+  func saveStateRepositoryRoundTrip() throws {
+    let database = try AppDatabase()
+    let repository = SQLiteSaveStateRepository(database: database)
+    let saveState = LocalSaveState(
+      profileId: "prof_local_01",
+      gameId: "shape-match",
+      version: "1.0.0",
+      payloadJSON: #"{"progress":{"matches":4,"streak":2}}"#,
+      updatedAt: "2026-04-19T19:30:00Z"
+    )
+
+    try repository.saveState(saveState)
+    let loadedState = try repository.loadState(
+      profileId: saveState.profileId,
+      gameId: saveState.gameId,
+      version: saveState.version
+    )
+
+    #expect(loadedState == saveState)
+  }
 }
