@@ -168,4 +168,110 @@ describe("EduGames API routes", () => {
 
     await app.close();
   });
+
+  it("serves catalog, game detail, and launch metadata for allowed profiles", async () => {
+    const app = createApp();
+    const registration = (
+      await app.inject({
+        method: "POST",
+        url: "/v1/installations/register",
+        payload: {
+          appVersion: "1.0.0",
+          iosVersion: "26.4",
+          deviceClass: "iPad14,3",
+          locale: "en-US",
+          supportsAppAttest: true
+        }
+      })
+    ).json();
+    const preschoolProfile = (
+      await app.inject({
+        method: "POST",
+        url: "/v1/profiles",
+        headers: {
+          authorization: `Bearer ${registration.accessToken}`
+        },
+        payload: {
+          ageBand: "PRESCHOOL_3_5",
+          avatarId: "fox-red"
+        }
+      })
+    ).json();
+    const latePrimaryProfile = (
+      await app.inject({
+        method: "POST",
+        url: "/v1/profiles",
+        headers: {
+          authorization: `Bearer ${registration.accessToken}`
+        },
+        payload: {
+          ageBand: "LATE_PRIMARY_9_10",
+          avatarId: "owl-blue"
+        }
+      })
+    ).json();
+
+    const preschoolCatalog = await app.inject({
+      method: "GET",
+      url: `/v1/catalog?profileId=${preschoolProfile.profileId}`,
+      headers: {
+        authorization: `Bearer ${registration.accessToken}`
+      }
+    });
+    const latePrimaryCatalog = await app.inject({
+      method: "GET",
+      url: `/v1/catalog?profileId=${latePrimaryProfile.profileId}`,
+      headers: {
+        authorization: `Bearer ${registration.accessToken}`
+      }
+    });
+    const gameDetail = await app.inject({
+      method: "GET",
+      url: `/v1/games/shape-match?profileId=${preschoolProfile.profileId}`,
+      headers: {
+        authorization: `Bearer ${registration.accessToken}`
+      }
+    });
+    const launchSession = await app.inject({
+      method: "POST",
+      url: "/v1/launch-sessions",
+      headers: {
+        authorization: `Bearer ${registration.accessToken}`
+      },
+      payload: {
+        profileId: preschoolProfile.profileId,
+        gameId: "shape-match"
+      }
+    });
+    const blockedLaunch = await app.inject({
+      method: "POST",
+      url: "/v1/launch-sessions",
+      headers: {
+        authorization: `Bearer ${registration.accessToken}`
+      },
+      payload: {
+        profileId: latePrimaryProfile.profileId,
+        gameId: "shape-match"
+      }
+    });
+
+    expect(preschoolCatalog.statusCode).toBe(200);
+    expect(preschoolCatalog.json().sections[0].items).toHaveLength(1);
+    expect(preschoolCatalog.json().sections[0].items[0].slug).toBe("shape-match");
+
+    expect(latePrimaryCatalog.statusCode).toBe(200);
+    expect(latePrimaryCatalog.json().sections[0].items).toHaveLength(0);
+
+    expect(gameDetail.statusCode).toBe(200);
+    expect(gameDetail.json().slug).toBe("shape-match");
+    expect(gameDetail.json().screenshots[0]).toMatch(/shape-match/);
+
+    expect(launchSession.statusCode).toBe(200);
+    expect(launchSession.json().gameId).toBe("shape-match");
+    expect(launchSession.json().bundle.bundleUrl).toMatch(/bundle\.zip$/);
+
+    expect(blockedLaunch.statusCode).toBe(403);
+
+    await app.close();
+  });
 });

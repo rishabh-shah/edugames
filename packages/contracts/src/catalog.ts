@@ -5,8 +5,17 @@ import {
   contentFlagsSchema,
   gameIdSchema,
   gameSlugSchema,
-  isoTimestampSchema
+  isoTimestampSchema,
+  profileIdSchema
 } from "./common.js";
+
+export const catalogQuerySchema = z.object({
+  profileId: profileIdSchema
+});
+
+export const gameDetailQuerySchema = z.object({
+  profileId: profileIdSchema
+});
 
 export const catalogItemSchema = z.object({
   gameId: gameIdSchema,
@@ -46,3 +55,5 @@ export const gameDetailResponseSchema = z.object({
 
 export type CatalogResponse = z.infer<typeof catalogResponseSchema>;
 export type GameDetailResponse = z.infer<typeof gameDetailResponseSchema>;
+export type CatalogQuery = z.infer<typeof catalogQuerySchema>;
+export type GameDetailQuery = z.infer<typeof gameDetailQuerySchema>;

@@ -1,8 +1,15 @@
 import {
+  catalogQuerySchema,
+  catalogResponseSchema,
   createProfileRequestSchema,
   createProfileResponseSchema,
   deleteProfileResponseSchema,
+  gameDetailQuerySchema,
+  gameDetailResponseSchema,
+  gameSlugSchema,
   listProfilesResponseSchema,
+  launchSessionRequestSchema,
+  launchSessionResponseSchema,
   profileIdSchema,
   refreshInstallationRequestSchema,
   refreshInstallationResponseSchema,
@@ -17,6 +24,8 @@ import { ApiError } from "./errors.js";
 import { requireInstallationAuth } from "./http/auth.js";
 import { InMemoryPlatformRepository } from "./repositories/in-memory-platform-repository.js";
 import { InstallationsService } from "./services/installations-service.js";
+import { CatalogService } from "./services/catalog-service.js";
+import { LaunchSessionsService } from "./services/launch-sessions-service.js";
 import { ProfilesService } from "./services/profiles-service.js";
 
 type Clock = {
@@ -39,6 +48,8 @@ export const createApp = (options: CreateAppOptions = {}) => {
     ...options.config
   };
   const installationsService = new InstallationsService(repository, config, clock);
+  const catalogService = new CatalogService(repository, clock);
+  const launchSessionsService = new LaunchSessionsService(repository, clock);
   const profilesService = new ProfilesService(repository, clock);
   const app = Fastify({
     logger: false
@@ -145,6 +156,56 @@ export const createApp = (options: CreateAppOptions = {}) => {
     const parsedProfileId = profileIdSchema.parse(profileId);
     const response = deleteProfileResponseSchema.parse(
       profilesService.delete(installationAuth.installationId, parsedProfileId)
+    );
+
+    return reply.status(200).send(response);
+  });
+
+  app.get("/v1/catalog", async (request, reply) => {
+    const installationAuth = request.installationAuth;
+
+    if (!installationAuth) {
+      throw new ApiError(401, "Missing installation authentication.");
+    }
+
+    const query = catalogQuerySchema.parse(request.query);
+    const response = catalogResponseSchema.parse(
+      catalogService.list(installationAuth.installationId, query.profileId)
+    );
+
+    return reply.status(200).send(response);
+  });
+
+  app.get("/v1/games/:slug", async (request, reply) => {
+    const installationAuth = request.installationAuth;
+
+    if (!installationAuth) {
+      throw new ApiError(401, "Missing installation authentication.");
+    }
+
+    const query = gameDetailQuerySchema.parse(request.query);
+    const slug = gameSlugSchema.parse((request.params as { slug: string }).slug);
+    const response = gameDetailResponseSchema.parse(
+      catalogService.getGameDetail(
+        installationAuth.installationId,
+        query.profileId,
+        slug
+      )
+    );
+
+    return reply.status(200).send(response);
+  });
+
+  app.post("/v1/launch-sessions", async (request, reply) => {
+    const installationAuth = request.installationAuth;
+
+    if (!installationAuth) {
+      throw new ApiError(401, "Missing installation authentication.");
+    }
+
+    const payload = launchSessionRequestSchema.parse(request.body);
+    const response = launchSessionResponseSchema.parse(
+      launchSessionsService.create(installationAuth.installationId, payload)
     );
 
     return reply.status(200).send(response);

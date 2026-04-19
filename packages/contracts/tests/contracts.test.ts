@@ -152,6 +152,8 @@ describe("contracts package", () => {
       "registerInstallation"
     );
     expect(document.paths["/v1/profiles"]?.post?.responses["201"]).toBeDefined();
-    expect(document.paths["/v1/launch-sessions"]).toBeUndefined();
+    expect(document.paths["/v1/catalog"]?.get?.operationId).toBe("getCatalog");
+    expect(document.paths["/v1/games/{slug}"]?.get?.operationId).toBe("getGameDetail");
+    expect(document.paths["/v1/launch-sessions"]?.post?.responses["200"]).toBeDefined();
   });
 });

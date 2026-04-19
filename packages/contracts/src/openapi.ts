@@ -1,4 +1,8 @@
 import {
+  catalogResponseSchema,
+  gameDetailResponseSchema
+} from "./catalog.js";
+import {
   createProfileRequestSchema,
   createProfileResponseSchema,
   deleteProfileResponseSchema,
@@ -10,6 +14,10 @@ import {
   registerInstallationRequestSchema,
   registerInstallationResponseSchema
 } from "./installations.js";
+import {
+  launchSessionRequestSchema,
+  launchSessionResponseSchema
+} from "./launch.js";
 type OpenApiSchemaRef = {
   $ref: string;
 };
@@ -57,7 +65,11 @@ const schemaEntries = {
   CreateProfileRequest: createProfileRequestSchema,
   CreateProfileResponse: createProfileResponseSchema,
   ListProfilesResponse: listProfilesResponseSchema,
-  DeleteProfileResponse: deleteProfileResponseSchema
+  DeleteProfileResponse: deleteProfileResponseSchema,
+  CatalogResponse: catalogResponseSchema,
+  GameDetailResponse: gameDetailResponseSchema,
+  LaunchSessionRequest: launchSessionRequestSchema,
+  LaunchSessionResponse: launchSessionResponseSchema
 };
 
 const ref = (name: keyof typeof schemaEntries): OpenApiSchemaRef => ({
@@ -162,6 +174,59 @@ export const createOpenApiDocument = (version = "0.1.0"): OpenApiDocument => ({
             content: {
               "application/json": {
                 schema: ref("DeleteProfileResponse")
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/catalog": {
+      get: {
+        operationId: "getCatalog",
+        responses: {
+          "200": {
+            description: "Catalog for the selected profile",
+            content: {
+              "application/json": {
+                schema: ref("CatalogResponse")
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/games/{slug}": {
+      get: {
+        operationId: "getGameDetail",
+        responses: {
+          "200": {
+            description: "Game detail for the selected profile",
+            content: {
+              "application/json": {
+                schema: ref("GameDetailResponse")
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/launch-sessions": {
+      post: {
+        operationId: "createLaunchSession",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: ref("LaunchSessionRequest")
+            }
+          }
+        },
+        responses: {
+          "200": {
+            description: "Launch session created",
+            content: {
+              "application/json": {
+                schema: ref("LaunchSessionResponse")
               }
             }
           }
