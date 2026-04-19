@@ -8,11 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		0A4F71B1F4A9B2FF5AC953CE /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB7E20D83583210BB4F865FD /* Security.framework */; };
+		13DFB441F9A90ACE5C41FF32 /* GameRuntimeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D96120DD10D92C3C4527DD36 /* GameRuntimeView.swift */; };
 		3D1D7B1643F99E980061994F /* AppModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAEC5FEFE7D3FD2B6358B3F7 /* AppModelTests.swift */; };
 		3EF2F8CD96D9FA2F62DADE3B /* PersistenceAndDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433C82398CD041B7F18190A1 /* PersistenceAndDecodingTests.swift */; };
 		4D31AE1CFC234362616391A8 /* EduGamesShellRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1DE997DD60BD551D663D584 /* EduGamesShellRootView.swift */; };
 		547F76A2AA40CD2B8F2D1771 /* EduGamesShellApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52166A4F35AAA5C48B87E936 /* EduGamesShellApp.swift */; };
 		57F97999BBA0C031313FC744 /* AppDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF278655A21C796AEA351645 /* AppDataStore.swift */; };
+		59D1303AFEAC2A7CDCFDD967 /* GameDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F361536FAB241672F29B409 /* GameDetailView.swift */; };
 		678B58FA93E4B8F453AB0347 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F43652D493A0E27F9B4EB134 /* libsqlite3.tbd */; };
 		6AC2DF6D8B1395728AE79FC3 /* EduGamesShellCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44B9EEABE0CA13C1BB9CC0FE /* EduGamesShellCore.framework */; };
 		6C900DE63796AB22695D2436 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EF6D2C39421086C5539437B /* AppModel.swift */; };
@@ -60,6 +62,7 @@
 		2D88844272F91C67F4FB1643 /* BootstrapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootstrapService.swift; sourceTree = "<group>"; };
 		433C82398CD041B7F18190A1 /* PersistenceAndDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceAndDecodingTests.swift; sourceTree = "<group>"; };
 		44B9EEABE0CA13C1BB9CC0FE /* EduGamesShellCore.framework */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.framework; path = EduGamesShellCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F361536FAB241672F29B409 /* GameDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailView.swift; sourceTree = "<group>"; };
 		52166A4F35AAA5C48B87E936 /* EduGamesShellApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EduGamesShellApp.swift; sourceTree = "<group>"; };
 		5EF6D2C39421086C5539437B /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		61ABB154D0A82EF0021C0562 /* BootstrapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootstrapView.swift; sourceTree = "<group>"; };
@@ -70,6 +73,7 @@
 		AA7FC302B6B27C9B1205963E /* EduGamesApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = EduGamesApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B340F97D6E7580D2A049094F /* CatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogView.swift; sourceTree = "<group>"; };
 		CF10EC35BFCCA10BE99CD7D4 /* ProfilePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePickerView.swift; sourceTree = "<group>"; };
+		D96120DD10D92C3C4527DD36 /* GameRuntimeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameRuntimeView.swift; sourceTree = "<group>"; };
 		DB7E20D83583210BB4F865FD /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		EAEC5FEFE7D3FD2B6358B3F7 /* AppModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelTests.swift; sourceTree = "<group>"; };
 		F1DE997DD60BD551D663D584 /* EduGamesShellRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EduGamesShellRootView.swift; sourceTree = "<group>"; };
@@ -133,7 +137,9 @@
 			isa = PBXGroup;
 			children = (
 				A90CA01E581B6307202774D0 /* Catalog */,
+				AA0D78EF1DB3EB5AA9FBBFD2 /* GameDetail */,
 				BC0B672174E51BDB93073EDB /* Profiles */,
+				83229C3394D4A415FD52726F /* Runtime */,
 			);
 			path = ChildExperience;
 			sourceTree = "<group>";
@@ -160,6 +166,14 @@
 			);
 			sourceTree = "<group>";
 		};
+		83229C3394D4A415FD52726F /* Runtime */ = {
+			isa = PBXGroup;
+			children = (
+				D96120DD10D92C3C4527DD36 /* GameRuntimeView.swift */,
+			);
+			path = Runtime;
+			sourceTree = "<group>";
+		};
 		98078F2348A75EA29AFCA0EC /* Persistence */ = {
 			isa = PBXGroup;
 			children = (
@@ -174,6 +188,14 @@
 				B340F97D6E7580D2A049094F /* CatalogView.swift */,
 			);
 			path = Catalog;
+			sourceTree = "<group>";
+		};
+		AA0D78EF1DB3EB5AA9FBBFD2 /* GameDetail */ = {
+			isa = PBXGroup;
+			children = (
+				4F361536FAB241672F29B409 /* GameDetailView.swift */,
+			);
+			path = GameDetail;
 			sourceTree = "<group>";
 		};
 		B79C39C9E048326AA5626587 /* Frameworks */ = {
@@ -420,6 +442,8 @@
 				77CA9FE1D80EF0A42049D4C1 /* BootstrapView.swift in Sources */,
 				A08B9DD05C9219AD59136364 /* CatalogView.swift in Sources */,
 				4D31AE1CFC234362616391A8 /* EduGamesShellRootView.swift in Sources */,
+				59D1303AFEAC2A7CDCFDD967 /* GameDetailView.swift in Sources */,
+				13DFB441F9A90ACE5C41FF32 /* GameRuntimeView.swift in Sources */,
 				775B50D284C9C87D92A30CAE /* PlatformAPIClient.swift in Sources */,
 				E1CBCAF8C2304B944AFEF81A /* PlatformModels.swift in Sources */,
 				75B099A68D817853F1B064CB /* ProfilePickerView.swift in Sources */,

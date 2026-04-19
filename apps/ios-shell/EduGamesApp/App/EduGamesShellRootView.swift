@@ -23,6 +23,10 @@ public struct EduGamesShellRootView: View {
           ProfilePickerView(model: model)
         case .catalog:
           CatalogView(model: model)
+        case .gameDetail:
+          GameDetailView(model: model)
+        case .runtime:
+          GameRuntimeView(model: model)
         }
       }
       .task {

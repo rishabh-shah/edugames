@@ -368,7 +368,13 @@ private enum FixtureBundleMaterializer {
 
     try FileManager.default.createDirectory(at: baseURL, withIntermediateDirectories: true)
 
-    if !FileManager.default.fileExists(atPath: expandedDirectoryURL.path) {
+    if let liveFixtureSourceURL = repoFixtureSourceURL() {
+      if FileManager.default.fileExists(atPath: expandedDirectoryURL.path) {
+        try? FileManager.default.removeItem(at: expandedDirectoryURL)
+      }
+
+      try FileManager.default.copyItem(at: liveFixtureSourceURL, to: expandedDirectoryURL)
+    } else if !FileManager.default.fileExists(atPath: expandedDirectoryURL.path) {
       try FileManager.default.createDirectory(
         at: expandedDirectoryURL,
         withIntermediateDirectories: true
@@ -390,23 +396,75 @@ private enum FixtureBundleMaterializer {
       )
     }
 
-    if !FileManager.default.fileExists(atPath: archiveURL.path) {
-      let archiveContents = """
-      archive=\(archiveStem)
-      \(manifestJSON)
-      \(indexHTML)
-      """
-
-      guard let archiveData = archiveContents.data(using: .utf8) else {
-        throw CocoaError(.coderInvalidValue)
-      }
-
-      try archiveData.write(to: archiveURL, options: .atomic)
-    }
+    try createArchive(from: expandedDirectoryURL, to: archiveURL)
 
     let archiveData = try Data(contentsOf: archiveURL)
     let checksum = SHA256.hash(data: archiveData).map { String(format: "%02x", $0) }.joined()
 
     return (archiveURL, expandedDirectoryURL, checksum)
+  }
+
+  private static func repoFixtureSourceURL() -> URL? {
+    var currentURL = URL(fileURLWithPath: #filePath)
+
+    for _ in 0..<5 {
+      currentURL.deleteLastPathComponent()
+    }
+
+    let repoFixtureURL = currentURL
+      .appendingPathComponent("games", isDirectory: true)
+      .appendingPathComponent("shape-match", isDirectory: true)
+      .appendingPathComponent("dist", isDirectory: true)
+
+    guard FileManager.default.fileExists(atPath: repoFixtureURL.path) else {
+      return nil
+    }
+
+    return repoFixtureURL
+  }
+
+  private static func createArchive(from sourceDirectoryURL: URL, to archiveURL: URL) throws {
+    if FileManager.default.fileExists(atPath: archiveURL.path) {
+      try FileManager.default.removeItem(at: archiveURL)
+    }
+
+    let fileURLs = try bundleFileURLs(in: sourceDirectoryURL)
+    let manifestLines = try fileURLs.map { fileURL in
+      let relativePath = expandedDirectoryName + "/" + fileURL.path.replacingOccurrences(
+        of: sourceDirectoryURL.path + "/",
+        with: ""
+      )
+      let fileData = try Data(contentsOf: fileURL)
+      let checksum = SHA256.hash(data: fileData).map { String(format: "%02x", $0) }.joined()
+      return "file=\(relativePath) sha256=\(checksum) bytes=\(fileData.count)"
+    }
+
+    let archiveContents = (["archive=\(archiveStem)"] + manifestLines).joined(separator: "\n")
+    guard let archiveData = archiveContents.data(using: .utf8) else {
+      throw CocoaError(.coderInvalidValue)
+    }
+
+    try archiveData.write(to: archiveURL, options: .atomic)
+  }
+
+  private static func bundleFileURLs(in sourceDirectoryURL: URL) throws -> [URL] {
+    let fileManager = FileManager.default
+    let enumerator = fileManager.enumerator(
+      at: sourceDirectoryURL,
+      includingPropertiesForKeys: [.isRegularFileKey],
+      options: [.skipsHiddenFiles]
+    )
+
+    var fileURLs: [URL] = []
+
+    while let fileURL = enumerator?.nextObject() as? URL {
+      let values = try fileURL.resourceValues(forKeys: [.isRegularFileKey])
+
+      if values.isRegularFile == true {
+        fileURLs.append(fileURL)
+      }
+    }
+
+    return fileURLs.sorted { $0.path < $1.path }
   }
 }

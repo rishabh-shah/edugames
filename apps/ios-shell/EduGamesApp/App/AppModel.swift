@@ -5,6 +5,8 @@ enum ShellRoute: Equatable {
   case bootstrap
   case profiles
   case catalog
+  case gameDetail
+  case runtime
 }
 
 @MainActor
@@ -16,13 +18,25 @@ final class AppModel {
   var profiles: [ChildProfile] = []
   var selectedProfile: ChildProfile?
   var catalog: CatalogResponse?
+  var selectedGame: CatalogGame?
+  var gameDetail: GameDetailResponse?
+  var activeLaunchDetails: GameLaunchDetails?
   var activeCreationOptionID: String?
   private(set) var hasStartedBootstrap = false
+  private var gameDetailRequestID: UUID?
 
   private let bootstrapService: BootstrapService
+  private let runtimeLaunchService: GameRuntimeLaunchService?
+  let saveStateRepository: SaveStateRepository
 
-  init(bootstrapService: BootstrapService) {
+  init(
+    bootstrapService: BootstrapService,
+    runtimeLaunchService: GameRuntimeLaunchService? = nil,
+    saveStateRepository: SaveStateRepository = InMemorySaveStateRepository()
+  ) {
     self.bootstrapService = bootstrapService
+    self.runtimeLaunchService = runtimeLaunchService
+    self.saveStateRepository = saveStateRepository
   }
 
   static func live(processInfo: ProcessInfo = .processInfo) -> AppModel {
@@ -50,6 +64,8 @@ final class AppModel {
     }
 
     let profileRepository = SQLiteProfileRepository(database: database)
+    let bundleCacheRepository = SQLiteBundleCacheRepository(database: database)
+    let saveStateRepository = SQLiteSaveStateRepository(database: database)
     let apiClient: PlatformAPIClient
 
     if useFixtures {
@@ -69,7 +85,14 @@ final class AppModel {
         apiClient: apiClient,
         sessionStore: sessionStore,
         profileRepository: profileRepository
-      )
+      ),
+      runtimeLaunchService: GameRuntimeLaunchService(
+        apiClient: apiClient,
+        bundleInstallService: BundleInstallService(
+          cacheRepository: bundleCacheRepository
+        )
+      ),
+      saveStateRepository: saveStateRepository
     )
   }
 
@@ -118,6 +141,10 @@ final class AppModel {
 
   func selectProfile(_ profile: ChildProfile) async {
     selectedProfile = profile
+    selectedGame = nil
+    gameDetail = nil
+    activeLaunchDetails = nil
+    gameDetailRequestID = nil
     bootstrapErrorMessage = nil
 
     do {
@@ -128,10 +155,84 @@ final class AppModel {
     }
   }
 
+  func selectGame(_ game: CatalogGame) async {
+    guard let selectedProfile else {
+      bootstrapErrorMessage = "Choose a profile before opening a game."
+      return
+    }
+
+    let requestID = UUID()
+    gameDetailRequestID = requestID
+    selectedGame = game
+    gameDetail = nil
+    bootstrapErrorMessage = nil
+
+    do {
+      let detail = try await bootstrapService.fetchGameDetail(
+        for: game,
+        profile: selectedProfile
+      )
+
+      guard gameDetailRequestID == requestID else {
+        return
+      }
+
+      gameDetail = detail
+      route = .gameDetail
+    } catch {
+      guard gameDetailRequestID == requestID else {
+        return
+      }
+
+      bootstrapErrorMessage = "Could not load this game right now."
+    }
+  }
+
+  func launchSelectedGame() async {
+    guard let selectedProfile, let selectedGame, let runtimeLaunchService else {
+      bootstrapErrorMessage = "This game is not ready to launch yet."
+      return
+    }
+
+    bootstrapErrorMessage = nil
+    activeLaunchDetails = nil
+    route = .runtime
+
+    do {
+      let session = try bootstrapService.currentSession()
+      activeLaunchDetails = try await runtimeLaunchService.prepareLaunch(
+        session: session,
+        request: GameLaunchRequest(profile: selectedProfile, game: selectedGame)
+      )
+      gameDetailRequestID = nil
+    } catch {
+      route = .gameDetail
+      bootstrapErrorMessage = "Could not start this game right now."
+    }
+  }
+
+  func backToCatalog() {
+    route = .catalog
+    activeLaunchDetails = nil
+    gameDetailRequestID = nil
+    bootstrapErrorMessage = nil
+  }
+
+  func exitActiveGame() {
+    activeLaunchDetails = nil
+    gameDetailRequestID = nil
+    route = .catalog
+    bootstrapErrorMessage = nil
+  }
+
   func backToProfiles() {
     route = .profiles
     catalog = nil
     selectedProfile = nil
+    selectedGame = nil
+    gameDetail = nil
+    activeLaunchDetails = nil
+    gameDetailRequestID = nil
     bootstrapErrorMessage = nil
   }
 }

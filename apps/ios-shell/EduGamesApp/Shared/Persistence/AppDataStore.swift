@@ -697,6 +697,22 @@ final class SQLiteSaveStateRepository: SaveStateRepository {
   }
 }
 
+final class InMemorySaveStateRepository: SaveStateRepository {
+  private var states: [String: LocalSaveState] = [:]
+
+  func loadState(profileId: String, gameId: String, version: String) throws -> LocalSaveState? {
+    states[key(profileId: profileId, gameId: gameId, version: version)]
+  }
+
+  func saveState(_ state: LocalSaveState) throws {
+    states[key(profileId: state.profileId, gameId: state.gameId, version: state.version)] = state
+  }
+
+  private func key(profileId: String, gameId: String, version: String) -> String {
+    "\(profileId)::\(gameId)::\(version)"
+  }
+}
+
 enum BundleInstallError: Error {
   case fixtureResourceMissing(String)
   case checksumMismatch(expected: String, actual: String)

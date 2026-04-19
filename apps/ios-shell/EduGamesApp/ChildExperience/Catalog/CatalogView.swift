@@ -41,20 +41,27 @@ struct CatalogView: View {
                   .font(.title2.bold())
 
                 ForEach(section.items) { item in
-                  VStack(alignment: .leading, spacing: 8) {
-                    Text(item.title)
-                      .font(.headline)
-                    Text(item.summary)
-                      .font(.subheadline)
-                      .foregroundStyle(.secondary)
-                    Text("Age band: \(item.ageBand)")
-                      .font(.caption.weight(.semibold))
-                      .foregroundStyle(.secondary)
+                  Button {
+                    Task {
+                      await model.selectGame(item)
+                    }
+                  } label: {
+                    VStack(alignment: .leading, spacing: 8) {
+                      Text(item.title)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                      Text(item.summary)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                      Text("Age band: \(item.ageBand)")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.white.opacity(0.88), in: RoundedRectangle(cornerRadius: 18))
                   }
-                  .padding()
-                  .frame(maxWidth: .infinity, alignment: .leading)
-                  .background(Color.white.opacity(0.88), in: RoundedRectangle(cornerRadius: 18))
-                  .accessibilityElement(children: .combine)
+                  .buttonStyle(.plain)
                   .accessibilityIdentifier("catalog-card-\(item.gameId)")
                 }
               }

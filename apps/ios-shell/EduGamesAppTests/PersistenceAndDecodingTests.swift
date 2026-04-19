@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import Testing
 
@@ -144,7 +145,7 @@ struct PersistenceAndDecodingTests {
     }
   }
 
-  @Test("fixture bundle install persists cache metadata and exposes a local entrypoint")
+  @Test("fixture bundle install persists cache metadata and keeps archive contents aligned")
   func fixtureBundleInstallPersistsCacheMetadata() throws {
     let database = try AppDatabase()
     let cacheRepository = SQLiteBundleCacheRepository(database: database)
@@ -161,6 +162,14 @@ struct PersistenceAndDecodingTests {
       gameId: launchSession.gameId,
       version: launchSession.version
     )
+    let archiveEntrypointChecksum = try archiveEntryChecksum(
+      at: installedBundle.archiveURL,
+      entryPath: "shape-match-fixture-bundle/index.html"
+    )
+    let installedEntrypointData = try Data(contentsOf: installedBundle.entrypointURL)
+    let installedEntrypointChecksum = SHA256.hash(data: installedEntrypointData)
+      .map { String(format: "%02x", $0) }
+      .joined()
 
     #expect(FileManager.default.fileExists(atPath: installedBundle.entrypointURL.path))
     #expect(installedBundle.entrypointURL.lastPathComponent == "index.html")
@@ -168,6 +177,7 @@ struct PersistenceAndDecodingTests {
     #expect(cachedRecord?.sha256 == launchSession.bundle.sha256)
     #expect(cachedRecord?.entrypointRelativePath == launchSession.manifest.entrypoint)
     #expect(cachedRecord?.sourceURL == launchSession.bundle.bundleURL.absoluteString)
+    #expect(archiveEntrypointChecksum == installedEntrypointChecksum)
   }
 
   @Test("SQLite save-state repository round-trips local game state")
@@ -190,5 +200,27 @@ struct PersistenceAndDecodingTests {
     )
 
     #expect(loadedState == saveState)
+  }
+
+  private func archiveEntryChecksum(
+    at archiveURL: URL,
+    entryPath: String
+  ) throws -> String {
+    let archiveContents = try String(contentsOf: archiveURL)
+
+    guard
+      let archiveLine = archiveContents
+        .split(separator: "\n")
+        .map(String.init)
+        .first(where: { $0.hasPrefix("file=\(entryPath) ") }),
+      let checksumComponent = archiveLine
+        .split(separator: " ")
+        .map(String.init)
+        .first(where: { $0.hasPrefix("sha256=") })
+    else {
+      throw CocoaError(.fileNoSuchFile)
+    }
+
+    return checksumComponent.replacingOccurrences(of: "sha256=", with: "")
   }
 }

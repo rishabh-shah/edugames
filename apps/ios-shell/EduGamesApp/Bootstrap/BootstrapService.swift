@@ -55,6 +55,22 @@ final class BootstrapService {
     )
   }
 
+  func fetchGameDetail(
+    for game: CatalogGame,
+    profile: ChildProfile
+  ) async throws -> GameDetailResponse {
+    let session = try requireSession()
+    return try await apiClient.fetchGameDetail(
+      session: session,
+      profileId: profile.id,
+      slug: game.slug
+    )
+  }
+
+  func currentSession() throws -> InstallationSession {
+    try requireSession()
+  }
+
   func clearLocalData() throws {
     try profileRepository.clear()
     try sessionStore.clear()
