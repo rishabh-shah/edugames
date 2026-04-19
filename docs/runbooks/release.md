@@ -18,6 +18,30 @@ This runbook is intentionally tooling-light. Use it until repo-level release aut
 - The release matches `docs/implementation-decisions.md`.
 - Validation follows `docs/testing-strategy.md`.
 - A maintainer is available to own release decisions and rollback calls.
+- The local machine or CI runner can execute the current validation commands listed below.
+
+## Local Verification
+
+Before a release candidate is approved, run the repo-level checks that match the changed surface:
+
+```sh
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:integration
+pnpm build
+pnpm test:sample-game
+pnpm exec playwright install --with-deps chromium webkit
+pnpm test:playwright
+```
+
+If the release touches `apps/ios-shell`, also verify on macOS with Xcode available:
+
+```sh
+cd /Users/shrutishah/Desktop/Codebase/edugames/apps/ios-shell
+xcodebuild -project EduGamesApp.xcodeproj -scheme EduGamesApp -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=26.4' test
+```
 
 ## Steps
 

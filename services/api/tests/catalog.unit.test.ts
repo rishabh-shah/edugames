@@ -34,13 +34,7 @@ describe("CatalogService", () => {
     expect(preschoolCatalog.sections[0]?.items.map((item) => item.slug)).toEqual([
       "shape-match"
     ]);
-    expect(latePrimaryCatalog.sections).toEqual([
-      {
-        key: "featured",
-        title: "Featured",
-        items: []
-      }
-    ]);
+    expect(latePrimaryCatalog.sections).toEqual([]);
   });
 
   it("rejects profile lookups outside the authenticated installation", () => {
@@ -62,5 +56,33 @@ describe("CatalogService", () => {
     expect(() => service.list("inst_other01", "prof_preschool01")).toThrow(
       /profile/i
     );
+  });
+
+  it("omits disabled games from catalog results", () => {
+    const repository = new InMemoryPlatformRepository();
+
+    repository.saveProfile({
+      id: "prof_preschool01",
+      installationId: "inst_shared01",
+      ageBand: "PRESCHOOL_3_5",
+      avatarId: "fox-red",
+      createdAt: "2026-04-19T18:00:00.000Z",
+      lastActiveAt: "2026-04-19T18:00:00.000Z"
+    });
+    repository.updatePublishedGameStatus(
+      "shape-match",
+      "disabled",
+      "2026-04-19T18:05:00.000Z",
+      "Kill switch"
+    );
+
+    const service = new CatalogService(repository, {
+      now: () => new Date("2026-04-19T18:06:00.000Z")
+    });
+
+    expect(service.list("inst_shared01", "prof_preschool01").sections).toEqual([]);
+    expect(() =>
+      service.getGameDetail("inst_shared01", "prof_preschool01", "shape-match")
+    ).toThrow(/game not found/i);
   });
 });

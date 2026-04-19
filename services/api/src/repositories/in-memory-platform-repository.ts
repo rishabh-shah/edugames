@@ -1,4 +1,10 @@
-import type { AgeBand, Cohort } from "@edugames/contracts";
+import type {
+  AgeBand,
+  Cohort,
+  GameModerationStatus,
+  ReportReason,
+  TelemetryEvent
+} from "@edugames/contracts";
 
 export type InstallationRecord = {
   id: string;
@@ -62,7 +68,10 @@ export type PublishedGameRecord = {
   sectionKey: string;
   sectionTitle: string;
   rank: number;
-  status: "live" | "disabled";
+  status: GameModerationStatus;
+  disabledAt: string | null;
+  disabledReason: string | null;
+  updatedAt: string;
 };
 
 export type LaunchSessionRecord = {
@@ -73,6 +82,28 @@ export type LaunchSessionRecord = {
   version: string;
   expiresAt: string;
   createdAt: string;
+};
+
+export type ReportRecord = {
+  id: string;
+  installationId: string;
+  profileId: string;
+  gameId: string;
+  reason: ReportReason;
+  details: string | null;
+  status: "open" | "resolved";
+  createdAt: string;
+};
+
+export type TelemetryBatchRecord = {
+  id: string;
+  installationId: string;
+  profileId: string;
+  launchSessionId: string;
+  gameId: string;
+  schemaVersion: number;
+  receivedAt: string;
+  events: TelemetryEvent[];
 };
 
 const defaultPublishedGames = (): PublishedGameRecord[] => [
@@ -107,7 +138,46 @@ const defaultPublishedGames = (): PublishedGameRecord[] => [
     sectionKey: "featured",
     sectionTitle: "Featured",
     rank: 1,
-    status: "live"
+    status: "live",
+    disabledAt: null,
+    disabledReason: null,
+    updatedAt: "2026-04-19T18:00:00.000Z"
+  },
+  {
+    gameId: "counting-kites",
+    slug: "counting-kites",
+    version: "0.1.0",
+    title: "Counting Kites",
+    summary: "Count bright kites and tap the right answer in a breezy sky.",
+    description: "A calm counting game waiting in the moderation queue.",
+    minAgeBand: "PRESCHOOL_3_5",
+    maxAgeBand: "EARLY_PRIMARY_6_8",
+    iconUrl: "https://cdn.example/games/counting-kites/0.1.0/assets/icon.png",
+    screenshots: [
+      "https://cdn.example/games/counting-kites/0.1.0/assets/ss-1.png"
+    ],
+    categories: ["counting", "number-sense"],
+    offlineReady: true,
+    contentFlags: {
+      externalLinks: false,
+      ugc: false,
+      chat: false,
+      ads: false,
+      purchases: false
+    },
+    bundleUrl: "https://cdn.example/games/counting-kites/0.1.0/bundle.zip",
+    sha256: "b".repeat(64),
+    compressedSizeBytes: 3973120,
+    entrypoint: "index.html",
+    allowedEvents: ["milestone:first-correct-answer"],
+    cohort: "general",
+    sectionKey: "new-and-noteworthy",
+    sectionTitle: "New and Noteworthy",
+    rank: 2,
+    status: "queued",
+    disabledAt: null,
+    disabledReason: null,
+    updatedAt: "2026-04-19T18:00:00.000Z"
   }
 ];
 
@@ -117,6 +187,8 @@ export class InMemoryPlatformRepository {
   profiles = new Map<string, ProfileRecord>();
   publishedGames = new Map<string, PublishedGameRecord>();
   launchSessions = new Map<string, LaunchSessionRecord>();
+  reports = new Map<string, ReportRecord>();
+  telemetryBatches = new Map<string, TelemetryBatchRecord>();
 
   constructor() {
     for (const game of defaultPublishedGames()) {
@@ -204,8 +276,86 @@ export class InMemoryPlatformRepository {
     return this.listPublishedGamesForCohort(cohort).find((game) => game.gameId === gameId);
   }
 
+  listPublishedGames(): PublishedGameRecord[] {
+    return [...this.publishedGames.values()].sort((left, right) => left.rank - right.rank);
+  }
+
+  getPublishedGameRecord(gameId: string): PublishedGameRecord | undefined {
+    return this.publishedGames.get(gameId);
+  }
+
+  updatePublishedGameStatus(
+    gameId: string,
+    status: GameModerationStatus,
+    updatedAt: string,
+    disabledReason: string | null
+  ): PublishedGameRecord | undefined {
+    const current = this.publishedGames.get(gameId);
+
+    if (!current) {
+      return undefined;
+    }
+
+    const nextRecord: PublishedGameRecord = {
+      ...current,
+      status,
+      disabledAt: status === "disabled" ? updatedAt : null,
+      disabledReason: status === "disabled" ? disabledReason : null,
+      updatedAt
+    };
+
+    this.publishedGames.set(gameId, nextRecord);
+
+    return nextRecord;
+  }
+
   saveLaunchSession(record: LaunchSessionRecord): LaunchSessionRecord {
     this.launchSessions.set(record.id, record);
     return record;
+  }
+
+  getLaunchSession(launchSessionId: string): LaunchSessionRecord | undefined {
+    return this.launchSessions.get(launchSessionId);
+  }
+
+  saveReport(record: ReportRecord): ReportRecord {
+    this.reports.set(record.id, record);
+    return record;
+  }
+
+  listReports(): ReportRecord[] {
+    return [...this.reports.values()].sort((left, right) =>
+      right.createdAt.localeCompare(left.createdAt)
+    );
+  }
+
+  updateReportStatus(
+    reportId: string,
+    status: ReportRecord["status"]
+  ): ReportRecord | undefined {
+    const current = this.reports.get(reportId);
+
+    if (!current) {
+      return undefined;
+    }
+
+    const nextRecord: ReportRecord = {
+      ...current,
+      status
+    };
+
+    this.reports.set(reportId, nextRecord);
+    return nextRecord;
+  }
+
+  saveTelemetryBatch(record: TelemetryBatchRecord): TelemetryBatchRecord {
+    this.telemetryBatches.set(record.id, record);
+    return record;
+  }
+
+  listTelemetryBatches(): TelemetryBatchRecord[] {
+    return [...this.telemetryBatches.values()].sort((left, right) =>
+      left.receivedAt.localeCompare(right.receivedAt)
+    );
   }
 }

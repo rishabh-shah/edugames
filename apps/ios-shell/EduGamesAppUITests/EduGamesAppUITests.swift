@@ -8,6 +8,7 @@ final class EduGamesAppUITests: XCTestCase {
     continueAfterFailure = false
     app.launchEnvironment["EDUGAMES_USE_FIXTURES"] = "1"
     app.launchEnvironment["EDUGAMES_RESET_LOCAL_DATA"] = "1"
+    app.launchEnvironment["EDUGAMES_PARENT_GATE_TEST_MODE"] = "1"
   }
 
   func testCreateProfileAndOpenCatalog() {
@@ -84,6 +85,120 @@ final class EduGamesAppUITests: XCTestCase {
     XCTAssertTrue(identifiedElement("catalog-view").waitForExistence(timeout: 5))
   }
 
+  func testParentZoneUpdatesPlayLimitAndPersistsAcrossRelaunch() {
+    app.launch()
+
+    let addProfileButton = app.buttons["add-profile-preschool"]
+    XCTAssertTrue(addProfileButton.waitForExistence(timeout: 5))
+    addProfileButton.tap()
+
+    let parentZoneButton = app.buttons["open-parent-zone-button"]
+    XCTAssertTrue(parentZoneButton.waitForExistence(timeout: 5))
+    parentZoneButton.tap()
+
+    let gateView = identifiedElement("parent-gate-view")
+    XCTAssertTrue(gateView.waitForExistence(timeout: 5))
+
+    let correctAnswerButton = gateChoice(identifier: "parent-gate-option-12", label: "12")
+    XCTAssertTrue(correctAnswerButton.waitForExistence(timeout: 5))
+    correctAnswerButton.tap()
+
+    let parentZoneView = identifiedElement("parent-zone-view")
+    XCTAssertTrue(parentZoneView.waitForExistence(timeout: 5))
+
+    let fortyFiveMinuteButton = app.buttons["play-limit-45-prof_fixture_01"]
+    XCTAssertTrue(fortyFiveMinuteButton.waitForExistence(timeout: 5))
+    fortyFiveMinuteButton.tap()
+
+    XCTAssertTrue(app.staticTexts["Current limit: 45 minutes"].waitForExistence(timeout: 5))
+
+    let doneButton = app.buttons["close-parent-zone-button"]
+    XCTAssertTrue(doneButton.waitForExistence(timeout: 5))
+    doneButton.tap()
+
+    XCTAssertTrue(identifiedElement("profile-picker-view").waitForExistence(timeout: 5))
+
+    app.terminate()
+    app.launchEnvironment["EDUGAMES_RESET_LOCAL_DATA"] = "0"
+    app.launch()
+
+    XCTAssertTrue(parentZoneButton.waitForExistence(timeout: 5))
+    parentZoneButton.tap()
+    let relaunchAnswerButton = gateChoice(identifier: "parent-gate-option-12", label: "12")
+    XCTAssertTrue(relaunchAnswerButton.waitForExistence(timeout: 5))
+    relaunchAnswerButton.tap()
+
+    XCTAssertTrue(parentZoneView.waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["Current limit: 45 minutes"].waitForExistence(timeout: 5))
+  }
+
+  func testPlayTimeExpiryReturnsToCatalog() {
+    app.launchEnvironment["EDUGAMES_DEBUG_SECONDS_PER_MINUTE"] = "0.1"
+    app.launch()
+
+    let addProfileButton = app.buttons["add-profile-preschool"]
+    XCTAssertTrue(addProfileButton.waitForExistence(timeout: 5))
+    addProfileButton.tap()
+
+    let createdProfile = app.buttons["profile-card-prof_fixture_01"]
+    XCTAssertTrue(createdProfile.waitForExistence(timeout: 5))
+    createdProfile.tap()
+
+    let catalogCard = app.buttons["catalog-card-shape-match"]
+    XCTAssertTrue(catalogCard.waitForExistence(timeout: 5))
+    catalogCard.tap()
+
+    let playButton = app.buttons["play-game-shape-match"]
+    XCTAssertTrue(playButton.waitForExistence(timeout: 5))
+    playButton.tap()
+
+    XCTAssertTrue(identifiedElement("game-runtime-view").waitForExistence(timeout: 5))
+    XCTAssertTrue(identifiedElement("playtime-warning-five-minutes").waitForExistence(timeout: 5))
+    XCTAssertTrue(identifiedElement("catalog-view").waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["Play time is up. Ask a parent to extend time in Parent Zone."].waitForExistence(timeout: 5))
+  }
+
+  func testRuntimeReportFlowIsParentGated() {
+    app.launch()
+
+    let addProfileButton = app.buttons["add-profile-preschool"]
+    XCTAssertTrue(addProfileButton.waitForExistence(timeout: 5))
+    addProfileButton.tap()
+
+    let createdProfile = app.buttons["profile-card-prof_fixture_01"]
+    XCTAssertTrue(createdProfile.waitForExistence(timeout: 5))
+    createdProfile.tap()
+
+    let catalogCard = app.buttons["catalog-card-shape-match"]
+    XCTAssertTrue(catalogCard.waitForExistence(timeout: 5))
+    catalogCard.tap()
+
+    let playButton = app.buttons["play-game-shape-match"]
+    XCTAssertTrue(playButton.waitForExistence(timeout: 5))
+    playButton.tap()
+
+    let reportButton = app.buttons["report-problem-button"]
+    XCTAssertTrue(reportButton.waitForExistence(timeout: 5))
+    reportButton.tap()
+
+    let gateView = identifiedElement("parent-gate-view")
+    XCTAssertTrue(gateView.waitForExistence(timeout: 5))
+
+    let correctAnswerButton = gateChoice(identifier: "parent-gate-option-12", label: "12")
+    XCTAssertTrue(correctAnswerButton.waitForExistence(timeout: 5))
+    correctAnswerButton.tap()
+
+    let reportView = identifiedElement("report-issue-view")
+    XCTAssertTrue(reportView.waitForExistence(timeout: 5))
+
+    let submitButton = button(identifier: "submit-report-button", label: "Send Report")
+    XCTAssertTrue(submitButton.waitForExistence(timeout: 5))
+    submitButton.tap()
+
+    XCTAssertFalse(reportView.waitForExistence(timeout: 2))
+    XCTAssertTrue(identifiedElement("game-runtime-view").waitForExistence(timeout: 5))
+  }
+
   private func attachScreenshot(named name: String) {
     let attachment = XCTAttachment(screenshot: app.screenshot())
     attachment.name = name
@@ -93,5 +208,23 @@ final class EduGamesAppUITests: XCTestCase {
 
   private func identifiedElement(_ identifier: String) -> XCUIElement {
     app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+  }
+
+  private func gateChoice(identifier: String, label: String) -> XCUIElement {
+    let identified = identifiedElement(identifier)
+    if identified.exists {
+      return identified
+    }
+
+    return app.buttons[label]
+  }
+
+  private func button(identifier: String, label: String) -> XCUIElement {
+    let identified = app.buttons[identifier]
+    if identified.exists {
+      return identified
+    }
+
+    return app.buttons[label]
   }
 }

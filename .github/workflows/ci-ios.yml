@@ -5,6 +5,18 @@ on:
     paths:
       - "apps/ios-shell/**"
       - ".github/workflows/ci-ios.yml"
+      - "Makefile"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/ios-shell/**"
+      - ".github/workflows/ci-ios.yml"
+      - "Makefile"
+      - "package.json"
+      - "pnpm-workspace.yaml"
   workflow_dispatch:
 
 permissions:
@@ -21,19 +33,88 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Detect Xcode project
-        id: detect
+      - name: Inspect Xcode
+        run: xcodebuild -version
+
+      - name: Select simulator
+        id: simulator
         run: |
-          if find apps/ios-shell \( -name "*.xcodeproj" -o -name "*.xcworkspace" \) | grep -q .; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
 
-      - name: Bootstrap notice
-        if: steps.detect.outputs.present == 'false'
-        run: echo "No Xcode project yet. iOS CI will become strict once apps/ios-shell is scaffolded."
+          def load_json(command):
+              output = subprocess.check_output(command, text=True)
+              return json.loads(output)
 
-      - name: Placeholder iOS validation
-        if: steps.detect.outputs.present == 'true'
-        run: echo "Replace with xcodebuild and simulator test commands once the iOS shell exists."
+          devicetypes = load_json([
+              "xcrun",
+              "simctl",
+              "list",
+              "devicetypes",
+              "available",
+              "-j"
+          ])
+          runtimes = load_json([
+              "xcrun",
+              "simctl",
+              "list",
+              "runtimes",
+              "available",
+              "-j"
+          ])
+
+          device_type = next(
+              (
+                  item["identifier"]
+                  for item in devicetypes["devicetypes"]
+                  if "iPad" in item["name"]
+              ),
+              None
+          )
+          runtime = next(
+              (
+                  item["identifier"]
+                  for item in reversed(runtimes["runtimes"])
+                  if item.get("platform") == "iOS" and item.get("isAvailable")
+              ),
+              None
+          )
+
+          if not device_type or not runtime:
+              raise SystemExit("Unable to find a usable iPad simulator runtime.")
+
+          sim_id = subprocess.check_output(
+              ["xcrun", "simctl", "create", "EduGames CI", device_type, runtime],
+              text=True
+          ).strip()
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write(f"sim_id={sim_id}\n")
+              handle.write(f"device_type={device_type}\n")
+              handle.write(f"runtime={runtime}\n")
+          PY
+
+      - name: Run iOS tests
+        run: |
+          xcodebuild \
+            -project apps/ios-shell/EduGamesApp.xcodeproj \
+            -scheme EduGamesApp \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.sim_id }}" \
+            -derivedDataPath apps/ios-shell/build/DerivedData \
+            -resultBundlePath apps/ios-shell/build/EduGamesApp.xcresult \
+            test
+
+      - name: Remove simulator
+        if: always()
+        run: xcrun simctl delete "${{ steps.simulator.outputs.sim_id }}" || true
+
+      - name: Upload xcresult
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-xcresult
+          path: apps/ios-shell/build/EduGamesApp.xcresult
+          if-no-files-found: warn

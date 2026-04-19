@@ -2,9 +2,33 @@ name: ci-node
 
 on:
   pull_request:
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "services/**"
+      - "games/**"
+      - ".github/workflows/ci-node.yml"
+      - ".github/workflows/ci-games.yml"
+      - ".github/workflows/ci-playwright.yml"
+      - ".github/workflows/ci-ios.yml"
+      - "Makefile"
+      - "package.json"
+      - "pnpm-workspace.yaml"
   push:
     branches:
       - main
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "services/**"
+      - "games/**"
+      - ".github/workflows/ci-node.yml"
+      - ".github/workflows/ci-games.yml"
+      - ".github/workflows/ci-playwright.yml"
+      - ".github/workflows/ci-ios.yml"
+      - "Makefile"
+      - "package.json"
+      - "pnpm-workspace.yaml"
 
 permissions:
   contents: read

@@ -290,7 +290,18 @@ Responsibilities:
 - collect coverage,
 - upload test reports.
 
-### 2. `ci-api-integration`
+### 2. `ci-games`
+
+Runs on Linux for sample-game validation.
+
+Responsibilities:
+
+- run the sample game test and build bundle,
+- validate the sample game manifest and referenced assets,
+- enforce bundle-size and offline-packaging expectations,
+- keep game-specific validation separate from the generic workspace suites.
+
+### 3. `ci-api-integration`
 
 Runs on Linux.
 
@@ -301,18 +312,18 @@ Responsibilities:
 - run API and worker integration tests,
 - verify contract compatibility.
 
-### 3. `ci-playwright`
+### 4. `ci-playwright`
 
 Runs on Linux.
 
 Responsibilities:
 
 - boot the local app stack,
-- run admin/site/runtime-harness E2E tests,
+- run sample-game/runtime-harness E2E tests,
 - run visual assertions,
 - upload HTML report, screenshots, and traces.
 
-### 4. `ci-ios`
+### 5. `ci-ios`
 
 Runs on macOS.
 
@@ -321,21 +332,9 @@ Responsibilities:
 - build the native shell,
 - run `Swift Testing` unit suites,
 - run `XCTest` and `XCUITest`,
+- select an available simulator at runtime on the runner,
 - collect code coverage,
 - upload `.xcresult` and screenshots.
-
-### 5. `ci-games`
-
-Runs on Linux.
-
-Responsibilities:
-
-- validate manifests,
-- build sample games,
-- run validator,
-- run runtime harness,
-- enforce bundle budgets,
-- run license and external-URL scans.
 
 ### 6. `preview-validate`
 
@@ -606,6 +605,10 @@ Visual checkpoints:
 - parental gate screen,
 - time-expired screen,
 - disabled-game screen.
+
+CI note:
+
+- On GitHub Actions macOS runners, the iOS workflow should use the checked-in `EduGamesApp.xcodeproj`, discover an available iPad simulator runtime dynamically, run `xcodebuild test`, and upload the `.xcresult` bundle for inspection.
 
 ## Test data and determinism rules
 

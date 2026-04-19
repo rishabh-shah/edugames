@@ -11,6 +11,12 @@ struct ProfilePickerView: View {
             .font(.largeTitle.bold())
           Text("Phase 6 keeps profile selection local-first, with each created profile mirrored into the backend contract we already built.")
             .foregroundStyle(.secondary)
+
+          Button("Parent Zone") {
+            model.requestParentZoneAccess(returningTo: .profiles)
+          }
+          .buttonStyle(.borderedProminent)
+          .accessibilityIdentifier("open-parent-zone-button")
         }
 
         if let errorMessage = model.bootstrapErrorMessage {

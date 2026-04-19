@@ -71,6 +71,36 @@ final class BootstrapService {
     try requireSession()
   }
 
+  func submitReport(
+    profileId: String,
+    gameId: String,
+    reason: ReportReason,
+    details: String?
+  ) async throws -> ReportSubmissionResponse {
+    let session = try requireSession()
+    return try await apiClient.submitReport(
+      session: session,
+      profileId: profileId,
+      gameId: gameId,
+      reason: reason,
+      details: details
+    )
+  }
+
+  func ingestTelemetryBatch(
+    profileId: String,
+    launchSessionId: String,
+    events: [TelemetryEventPayload]
+  ) async throws -> TelemetryBatchResponse {
+    let session = try requireSession()
+    return try await apiClient.ingestTelemetryBatch(
+      session: session,
+      profileId: profileId,
+      launchSessionId: launchSessionId,
+      events: events
+    )
+  }
+
   func clearLocalData() throws {
     try profileRepository.clear()
     try sessionStore.clear()

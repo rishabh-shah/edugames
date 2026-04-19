@@ -202,6 +202,21 @@ struct PersistenceAndDecodingTests {
     #expect(loadedState == saveState)
   }
 
+  @Test("SQLite play-time settings repository round-trips per-profile limits")
+  func playTimeSettingsRepositoryRoundTrip() throws {
+    let database = try AppDatabase()
+    let repository = SQLitePlayTimeSettingsRepository(database: database)
+    let settings = ParentPlayTimeSettings(
+      profileId: "prof_local_01",
+      playTimeLimit: .minutes60
+    )
+
+    try repository.saveSettings(settings)
+    let loadedSettings = try repository.loadSettings(profileId: settings.profileId)
+
+    #expect(loadedSettings == settings)
+  }
+
   private func archiveEntryChecksum(
     at archiveURL: URL,
     entryPath: String

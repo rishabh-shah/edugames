@@ -23,6 +23,19 @@ protocol PlatformAPIClient {
     profileId: String,
     gameId: String
   ) async throws -> LaunchSessionResponse
+  func submitReport(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String,
+    reason: ReportReason,
+    details: String?
+  ) async throws -> ReportSubmissionResponse
+  func ingestTelemetryBatch(
+    session: InstallationSession,
+    profileId: String,
+    launchSessionId: String,
+    events: [TelemetryEventPayload]
+  ) async throws -> TelemetryBatchResponse
 }
 
 struct InstallationRegistrationContext: Equatable, Sendable {
@@ -82,6 +95,28 @@ final class FixturePlatformAPIClient: PlatformAPIClient {
     gameId: String
   ) async throws -> LaunchSessionResponse {
     LaunchSessionResponse.fixture
+  }
+
+  func submitReport(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String,
+    reason: ReportReason,
+    details: String?
+  ) async throws -> ReportSubmissionResponse {
+    ReportSubmissionResponse(
+      reportId: "rep_fixture_123abc",
+      status: "open"
+    )
+  }
+
+  func ingestTelemetryBatch(
+    session: InstallationSession,
+    profileId: String,
+    launchSessionId: String,
+    events: [TelemetryEventPayload]
+  ) async throws -> TelemetryBatchResponse {
+    TelemetryBatchResponse(accepted: events.count)
   }
 }
 
@@ -190,6 +225,45 @@ final class LivePlatformAPIClient: PlatformAPIClient {
     )
   }
 
+  func submitReport(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String,
+    reason: ReportReason,
+    details: String?
+  ) async throws -> ReportSubmissionResponse {
+    try await send(
+      path: "/v1/reports",
+      method: "POST",
+      requestBody: CreateReportRequest(
+        profileId: profileId,
+        gameId: gameId,
+        reason: reason.rawValue,
+        details: details
+      ),
+      accessToken: session.accessToken
+    )
+  }
+
+  func ingestTelemetryBatch(
+    session: InstallationSession,
+    profileId: String,
+    launchSessionId: String,
+    events: [TelemetryEventPayload]
+  ) async throws -> TelemetryBatchResponse {
+    try await send(
+      path: "/v1/telemetry/batches",
+      method: "POST",
+      requestBody: CreateTelemetryBatchRequest(
+        profileId: profileId,
+        launchSessionId: launchSessionId,
+        schemaVersion: 1,
+        events: events
+      ),
+      accessToken: session.accessToken
+    )
+  }
+
   private func send<RequestBody: Encodable, ResponseBody: Decodable>(
     path: String,
     method: String,
@@ -290,6 +364,40 @@ private struct CreateProfileResponse: Decodable {
 private struct CreateLaunchSessionRequest: Encodable {
   let profileId: String
   let gameId: String
+}
+
+private struct CreateReportRequest: Encodable {
+  let profileId: String
+  let gameId: String
+  let reason: String
+  let details: String?
+
+  private enum CodingKeys: String, CodingKey {
+    case profileId
+    case gameId
+    case reason
+    case details
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(profileId, forKey: .profileId)
+    try container.encode(gameId, forKey: .gameId)
+    try container.encode(reason, forKey: .reason)
+
+    if let details {
+      try container.encode(details, forKey: .details)
+    } else {
+      try container.encodeNil(forKey: .details)
+    }
+  }
+}
+
+private struct CreateTelemetryBatchRequest: Encodable {
+  let profileId: String
+  let launchSessionId: String
+  let schemaVersion: Int
+  let events: [TelemetryEventPayload]
 }
 
 @MainActor

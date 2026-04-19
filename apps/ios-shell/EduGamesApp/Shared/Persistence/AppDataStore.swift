@@ -31,6 +31,11 @@ protocol SaveStateRepository {
   func saveState(_ state: LocalSaveState) throws
 }
 
+protocol PlayTimeSettingsRepository {
+  func loadSettings(profileId: String) throws -> ParentPlayTimeSettings?
+  func saveSettings(_ settings: ParentPlayTimeSettings) throws
+}
+
 struct BundleCacheRecord: Equatable {
   let gameId: String
   let version: String
@@ -511,6 +516,60 @@ final class AppDatabase {
     }
   }
 
+  func loadPlayTimeSettings(profileId: String) throws -> ParentPlayTimeSettings? {
+    let statement = try prepareStatement(
+      sql: """
+      SELECT profileId, playTimeMinutes
+      FROM play_time_settings
+      WHERE profileId = ?
+      LIMIT 1
+      """
+    )
+    defer { sqlite3_finalize(statement) }
+
+    try bind(profileId, at: 1, in: statement)
+
+    let result = sqlite3_step(statement)
+
+    guard result != SQLITE_ROW else {
+      let minutes = Int(sqlite3_column_int64(statement, 1))
+
+      guard let playTimeLimit = PlayTimeLimit(rawValue: minutes) else {
+        throw SQLiteProfileRepositoryError.stepFailed(message: "Invalid play time limit: \(minutes)")
+      }
+
+      return ParentPlayTimeSettings(
+        profileId: String(cString: sqlite3_column_text(statement, 0)),
+        playTimeLimit: playTimeLimit
+      )
+    }
+
+    guard result == SQLITE_DONE else {
+      throw SQLiteProfileRepositoryError.stepFailed(message: lastErrorMessage())
+    }
+
+    return nil
+  }
+
+  func savePlayTimeSettings(_ settings: ParentPlayTimeSettings) throws {
+    let statement = try prepareStatement(
+      sql: """
+      INSERT INTO play_time_settings (profileId, playTimeMinutes)
+      VALUES (?, ?)
+      ON CONFLICT(profileId) DO UPDATE SET
+        playTimeMinutes = excluded.playTimeMinutes
+      """
+    )
+    defer { sqlite3_finalize(statement) }
+
+    try bind(settings.profileId, at: 1, in: statement)
+    try bind(Int64(settings.playTimeLimit.minutes), at: 2, in: statement)
+
+    guard sqlite3_step(statement) == SQLITE_DONE else {
+      throw SQLiteProfileRepositoryError.stepFailed(message: lastErrorMessage())
+    }
+  }
+
   func clearProfiles() throws {
     let statement = try prepareStatement(sql: "DELETE FROM profiles")
     defer { sqlite3_finalize(statement) }
@@ -572,6 +631,14 @@ final class AppDatabase {
         payloadJson TEXT NOT NULL,
         updatedAt TEXT NOT NULL,
         PRIMARY KEY (profileId, gameId, version)
+      )
+      """
+    )
+    try execute(
+      sql: """
+      CREATE TABLE IF NOT EXISTS play_time_settings (
+        profileId TEXT PRIMARY KEY NOT NULL,
+        playTimeMinutes INTEGER NOT NULL
       )
       """
     )
@@ -710,6 +777,38 @@ final class InMemorySaveStateRepository: SaveStateRepository {
 
   private func key(profileId: String, gameId: String, version: String) -> String {
     "\(profileId)::\(gameId)::\(version)"
+  }
+}
+
+final class SQLitePlayTimeSettingsRepository: PlayTimeSettingsRepository {
+  private let database: AppDatabase
+
+  init(database: AppDatabase) {
+    self.database = database
+  }
+
+  func loadSettings(profileId: String) throws -> ParentPlayTimeSettings? {
+    try database.loadPlayTimeSettings(profileId: profileId)
+  }
+
+  func saveSettings(_ settings: ParentPlayTimeSettings) throws {
+    try database.savePlayTimeSettings(settings)
+  }
+}
+
+final class InMemoryPlayTimeSettingsRepository: PlayTimeSettingsRepository {
+  private var settingsByProfileID: [String: ParentPlayTimeSettings]
+
+  init(settings: [ParentPlayTimeSettings] = []) {
+    settingsByProfileID = Dictionary(uniqueKeysWithValues: settings.map { ($0.profileId, $0) })
+  }
+
+  func loadSettings(profileId: String) throws -> ParentPlayTimeSettings? {
+    settingsByProfileID[profileId]
+  }
+
+  func saveSettings(_ settings: ParentPlayTimeSettings) throws {
+    settingsByProfileID[settings.profileId] = settings
   }
 }
 

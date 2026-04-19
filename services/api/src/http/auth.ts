@@ -61,3 +61,17 @@ export const requireInstallationAuth = (
 
   return request.installationAuth;
 };
+
+export const requireAdminAuth = (
+  request: FastifyRequest,
+  config: ApiConfig
+): true => {
+  const adminApiKey = request.headers["x-admin-api-key"];
+  const providedApiKey = Array.isArray(adminApiKey) ? adminApiKey[0] : adminApiKey;
+
+  if (!providedApiKey || providedApiKey !== config.adminApiKey) {
+    throw new ApiError(401, "Missing or invalid admin API key.");
+  }
+
+  return true;
+};

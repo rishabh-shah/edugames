@@ -2,10 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import {
   ageBandSchema,
+  createModerationActionResponseSchema,
   createOpenApiDocument,
+  createReportRequestSchema,
+  listModerationGamesResponseSchema,
+  listModerationReportsResponseSchema,
   gameManifestSchema,
   launchSessionResponseSchema,
   registerInstallationRequestSchema,
+  resolveModerationReportResponseSchema,
+  telemetryBatchRequestSchema,
   telemetryEventSchema
 } from "../src/index.js";
 
@@ -66,6 +72,87 @@ describe("contracts package", () => {
 
     expect(launchResponse.manifest.entrypoint).toBe("index.html");
     expect(milestoneEvent.type).toBe("milestone");
+  });
+
+  it("validates report submission, telemetry batches, and moderation review payloads", () => {
+    const report = createReportRequestSchema.parse({
+      profileId: "prof_123abc",
+      gameId: "shape-match",
+      reason: "safety",
+      details: "Unexpected free-form input is shown."
+    });
+    const telemetryBatch = telemetryBatchRequestSchema.parse({
+      profileId: "prof_123abc",
+      launchSessionId: "ls_123abc",
+      schemaVersion: 1,
+      events: [
+        {
+          ts: "2026-04-19T18:00:00Z",
+          type: "session_start"
+        },
+        {
+          ts: "2026-04-19T18:00:02Z",
+          type: "milestone",
+          name: "first-match",
+          value: 1
+        }
+      ]
+    });
+    const moderationListing = listModerationGamesResponseSchema.parse({
+      generatedAt: "2026-04-19T18:00:00Z",
+      games: [
+        {
+          gameId: "shape-match",
+          slug: "shape-match",
+          title: "Shape Match",
+          version: "1.0.0",
+          status: "disabled",
+          disabledAt: "2026-04-19T18:00:00Z",
+          disabledReason: "Safety escalation",
+          openReportCount: 2,
+          totalReportCount: 3,
+          latestReportAt: "2026-04-19T18:01:00Z",
+          telemetry: {
+            sessionStarts: 4,
+            sessionEnds: 3,
+            milestones: 8,
+            lastEventAt: "2026-04-19T18:02:00Z"
+          }
+        }
+      ]
+    });
+    const moderationAction = createModerationActionResponseSchema.parse({
+      gameId: "shape-match",
+      status: "queued",
+      disabledAt: null,
+      disabledReason: null
+    });
+    const moderationReports = listModerationReportsResponseSchema.parse({
+      generatedAt: "2026-04-19T18:04:00Z",
+      reports: [
+        {
+          reportId: "rep_123abc",
+          profileId: "prof_123abc",
+          gameId: "shape-match",
+          gameTitle: "Shape Match",
+          reason: "bug",
+          details: "The round froze after the first match.",
+          status: "open",
+          submittedAt: "2026-04-19T18:03:00Z"
+        }
+      ]
+    });
+    const resolveReport = resolveModerationReportResponseSchema.parse({
+      reportId: "rep_123abc",
+      status: "resolved"
+    });
+
+    expect(report.reason).toBe("safety");
+    expect(telemetryBatch.events).toHaveLength(2);
+    expect(moderationListing.games[0]?.telemetry.sessionStarts).toBe(4);
+    expect(moderationAction.status).toBe("queued");
+    expect(moderationReports.reports[0]?.gameTitle).toBe("Shape Match");
+    expect(resolveReport.status).toBe("resolved");
   });
 
   it("validates the game manifest contract", () => {

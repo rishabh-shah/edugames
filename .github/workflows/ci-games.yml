@@ -1,0 +1,57 @@
+name: ci-games
+
+on:
+  pull_request:
+    paths:
+      - "games/**"
+      - "packages/contracts/**"
+      - "packages/game-sdk/**"
+      - "packages/game-validator/**"
+      - ".github/workflows/ci-games.yml"
+      - "Makefile"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+  push:
+    branches:
+      - main
+    paths:
+      - "games/**"
+      - "packages/contracts/**"
+      - "packages/game-sdk/**"
+      - "packages/game-validator/**"
+      - ".github/workflows/ci-games.yml"
+      - "Makefile"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-games-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  games:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate sample game bundle
+        run: pnpm test:sample-game

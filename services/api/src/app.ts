@@ -1,32 +1,46 @@
 import {
   catalogQuerySchema,
   catalogResponseSchema,
+  createModerationActionResponseSchema,
   createProfileRequestSchema,
   createProfileResponseSchema,
+  createReportRequestSchema,
+  createReportResponseSchema,
   deleteProfileResponseSchema,
   gameDetailQuerySchema,
   gameDetailResponseSchema,
   gameSlugSchema,
+  gameIdSchema,
+  listModerationGamesResponseSchema,
+  listModerationReportsResponseSchema,
   listProfilesResponseSchema,
   launchSessionRequestSchema,
   launchSessionResponseSchema,
+  moderationReasonRequestSchema,
   profileIdSchema,
   refreshInstallationRequestSchema,
   refreshInstallationResponseSchema,
   registerInstallationRequestSchema,
-  registerInstallationResponseSchema
+  registerInstallationResponseSchema,
+  reportIdSchema,
+  resolveModerationReportResponseSchema,
+  telemetryBatchRequestSchema,
+  telemetryBatchResponseSchema
 } from "@edugames/contracts";
 import Fastify from "fastify";
 import { ZodError } from "zod";
 
 import { defaultApiConfig, type ApiConfig } from "./config.js";
 import { ApiError } from "./errors.js";
-import { requireInstallationAuth } from "./http/auth.js";
+import { requireAdminAuth, requireInstallationAuth } from "./http/auth.js";
 import { InMemoryPlatformRepository } from "./repositories/in-memory-platform-repository.js";
 import { InstallationsService } from "./services/installations-service.js";
 import { CatalogService } from "./services/catalog-service.js";
 import { LaunchSessionsService } from "./services/launch-sessions-service.js";
+import { ModerationService } from "./services/moderation-service.js";
 import { ProfilesService } from "./services/profiles-service.js";
+import { ReportsService } from "./services/reports-service.js";
+import { TelemetryService } from "./services/telemetry-service.js";
 
 type Clock = {
   now: () => Date;
@@ -50,7 +64,10 @@ export const createApp = (options: CreateAppOptions = {}) => {
   const installationsService = new InstallationsService(repository, config, clock);
   const catalogService = new CatalogService(repository, clock);
   const launchSessionsService = new LaunchSessionsService(repository, clock);
+  const moderationService = new ModerationService(repository, clock);
   const profilesService = new ProfilesService(repository, clock);
+  const reportsService = new ReportsService(repository, clock);
+  const telemetryService = new TelemetryService(repository, clock);
   const app = Fastify({
     logger: false
   });
@@ -110,9 +127,15 @@ export const createApp = (options: CreateAppOptions = {}) => {
       request.url.startsWith("/v1/profiles") ||
       request.url.startsWith("/v1/catalog") ||
       request.url.startsWith("/v1/games") ||
-      request.url.startsWith("/v1/launch-sessions")
+      request.url.startsWith("/v1/launch-sessions") ||
+      request.url.startsWith("/v1/reports") ||
+      request.url.startsWith("/v1/telemetry")
     ) {
       requireInstallationAuth(request, repository, config, clock.now());
+    }
+
+    if (request.url.startsWith("/v1/admin")) {
+      requireAdminAuth(request, config);
     }
   });
 
@@ -206,6 +229,91 @@ export const createApp = (options: CreateAppOptions = {}) => {
     const payload = launchSessionRequestSchema.parse(request.body);
     const response = launchSessionResponseSchema.parse(
       launchSessionsService.create(installationAuth.installationId, payload)
+    );
+
+    return reply.status(200).send(response);
+  });
+
+  app.post("/v1/reports", async (request, reply) => {
+    const installationAuth = request.installationAuth;
+
+    if (!installationAuth) {
+      throw new ApiError(401, "Missing installation authentication.");
+    }
+
+    const payload = createReportRequestSchema.parse(request.body);
+    const response = createReportResponseSchema.parse(
+      reportsService.create(installationAuth.installationId, payload)
+    );
+
+    return reply.status(201).send(response);
+  });
+
+  app.post("/v1/telemetry/batches", async (request, reply) => {
+    const installationAuth = request.installationAuth;
+
+    if (!installationAuth) {
+      throw new ApiError(401, "Missing installation authentication.");
+    }
+
+    const payload = telemetryBatchRequestSchema.parse(request.body);
+    const response = telemetryBatchResponseSchema.parse(
+      telemetryService.ingest(installationAuth.installationId, payload)
+    );
+
+    return reply.status(202).send(response);
+  });
+
+  app.get("/v1/admin/games", async (_request, reply) => {
+    const response = listModerationGamesResponseSchema.parse(
+      moderationService.listGamesForReview()
+    );
+
+    return reply.status(200).send(response);
+  });
+
+  app.post("/v1/admin/games/:gameId/disable", async (request, reply) => {
+    const gameId = gameIdSchema.parse((request.params as { gameId: string }).gameId);
+    const payload = moderationReasonRequestSchema.parse(request.body);
+    const response = createModerationActionResponseSchema.parse(
+      moderationService.disableGame(gameId, payload.reason)
+    );
+
+    return reply.status(200).send(response);
+  });
+
+  app.post("/v1/admin/games/:gameId/approve", async (request, reply) => {
+    const gameId = gameIdSchema.parse((request.params as { gameId: string }).gameId);
+    const response = createModerationActionResponseSchema.parse(
+      moderationService.approveGame(gameId)
+    );
+
+    return reply.status(200).send(response);
+  });
+
+  app.post("/v1/admin/games/:gameId/enable", async (request, reply) => {
+    const gameId = gameIdSchema.parse((request.params as { gameId: string }).gameId);
+    const response = createModerationActionResponseSchema.parse(
+      moderationService.enableGame(gameId)
+    );
+
+    return reply.status(200).send(response);
+  });
+
+  app.get("/v1/admin/reports", async (_request, reply) => {
+    const response = listModerationReportsResponseSchema.parse(
+      moderationService.listReportsForReview()
+    );
+
+    return reply.status(200).send(response);
+  });
+
+  app.post("/v1/admin/reports/:reportId/resolve", async (request, reply) => {
+    const reportId = reportIdSchema.parse(
+      (request.params as { reportId: string }).reportId
+    );
+    const response = resolveModerationReportResponseSchema.parse(
+      moderationService.resolveReport(reportId)
     );
 
     return reply.status(200).send(response);

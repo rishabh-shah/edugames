@@ -12,9 +12,11 @@
     "lint": "pnpm -r --if-present run lint",
     "test": "pnpm -r --if-present run test",
     "test:e2e": "playwright test",
+    "test:playwright": "playwright test tests/e2e/shape-match.spec.ts",
+    "test:sample-game": "pnpm --filter @edugames/shape-match test && pnpm --filter @edugames/shape-match build && pnpm --filter @edugames/game-validator validate ../../games/shape-match",
     "test:integration": "pnpm -r --if-present run test:integration",
     "typecheck": "pnpm -r --if-present run typecheck",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e"
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration && pnpm build && pnpm test:sample-game && pnpm test:playwright"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2",

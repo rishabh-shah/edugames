@@ -7,9 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		075E5B7888699F8EB84A0BAA /* PlayTimeExtensionPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 936B1BB2B5A6AC3D156F1E89 /* PlayTimeExtensionPickerView.swift */; };
 		0A4F71B1F4A9B2FF5AC953CE /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB7E20D83583210BB4F865FD /* Security.framework */; };
 		13DFB441F9A90ACE5C41FF32 /* GameRuntimeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D96120DD10D92C3C4527DD36 /* GameRuntimeView.swift */; };
+		1A9A0D34D2B0310A0A4527E5 /* ParentZoneAndPlayTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67D3DD44788FC2EC82ADD348 /* ParentZoneAndPlayTimeTests.swift */; };
 		3D1D7B1643F99E980061994F /* AppModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAEC5FEFE7D3FD2B6358B3F7 /* AppModelTests.swift */; };
+		3D6E2669DAECE4B825790F72 /* ParentZoneModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE48AFE25AD408A2244CF63D /* ParentZoneModels.swift */; };
 		3EF2F8CD96D9FA2F62DADE3B /* PersistenceAndDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433C82398CD041B7F18190A1 /* PersistenceAndDecodingTests.swift */; };
 		4D31AE1CFC234362616391A8 /* EduGamesShellRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1DE997DD60BD551D663D584 /* EduGamesShellRootView.swift */; };
 		547F76A2AA40CD2B8F2D1771 /* EduGamesShellApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52166A4F35AAA5C48B87E936 /* EduGamesShellApp.swift */; };
@@ -21,14 +24,17 @@
 		75B099A68D817853F1B064CB /* ProfilePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF10EC35BFCCA10BE99CD7D4 /* ProfilePickerView.swift */; };
 		775B50D284C9C87D92A30CAE /* PlatformAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFCC33F8B19F675F21D9C634 /* PlatformAPIClient.swift */; };
 		77CA9FE1D80EF0A42049D4C1 /* BootstrapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61ABB154D0A82EF0021C0562 /* BootstrapView.swift */; };
+		7825B93B401BDC2A8BC60803 /* ParentGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF867672B71DD78F184AD63 /* ParentGateView.swift */; };
 		788CEF1CA21F380C5A57DDC2 /* EduGamesAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067E75E0DFEC8A61694E3890 /* EduGamesAppUITests.swift */; };
 		8BAAF4FEFED667B655DB2E8F /* BootstrapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D88844272F91C67F4FB1643 /* BootstrapService.swift */; };
+		8C3265979C2E0EF20AFAB27C /* ReportIssueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B2ACDC2491001B79116D8 /* ReportIssueView.swift */; };
 		A08B9DD05C9219AD59136364 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B340F97D6E7580D2A049094F /* CatalogView.swift */; };
 		E1CBCAF8C2304B944AFEF81A /* PlatformModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 973DE612FB172320B29AEEAC /* PlatformModels.swift */; };
 		EF97C67EB86934C49D91014D /* EduGamesShellCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44B9EEABE0CA13C1BB9CC0FE /* EduGamesShellCore.framework */; };
 		FA614D7A36855DA65218E9B2 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C009075234C80F121AF5D60 /* WebKit.framework */; };
 		FB300F5D8F2AE522D13ABACD /* BootstrapServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C8D5F40BEA7A89C81C504 /* BootstrapServiceTests.swift */; };
 		FB5755303E0A47AC8BBEBF67 /* PlatformAPIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C33CF68BD1ADC1E0F80520E /* PlatformAPIClientTests.swift */; };
+		FDA3FF7D043EDE75C4DBFAE6 /* ParentZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2EC1F7797DB6DDC80B4D2A /* ParentZoneView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +64,8 @@
 /* Begin PBXFileReference section */
 		067E75E0DFEC8A61694E3890 /* EduGamesAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EduGamesAppUITests.swift; sourceTree = "<group>"; };
 		0C009075234C80F121AF5D60 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		0CF867672B71DD78F184AD63 /* ParentGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentGateView.swift; sourceTree = "<group>"; };
+		1A2B2ACDC2491001B79116D8 /* ReportIssueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportIssueView.swift; sourceTree = "<group>"; };
 		2015C078A374D7EC8EC2EEB6 /* EduGamesAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = EduGamesAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D88844272F91C67F4FB1643 /* BootstrapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootstrapService.swift; sourceTree = "<group>"; };
 		433C82398CD041B7F18190A1 /* PersistenceAndDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceAndDecodingTests.swift; sourceTree = "<group>"; };
@@ -66,11 +74,14 @@
 		52166A4F35AAA5C48B87E936 /* EduGamesShellApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EduGamesShellApp.swift; sourceTree = "<group>"; };
 		5EF6D2C39421086C5539437B /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		61ABB154D0A82EF0021C0562 /* BootstrapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootstrapView.swift; sourceTree = "<group>"; };
+		67D3DD44788FC2EC82ADD348 /* ParentZoneAndPlayTimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentZoneAndPlayTimeTests.swift; sourceTree = "<group>"; };
 		68F8B6CC021541368EAAA5DA /* EduGamesAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = EduGamesAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D0C8D5F40BEA7A89C81C504 /* BootstrapServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootstrapServiceTests.swift; sourceTree = "<group>"; };
 		8C33CF68BD1ADC1E0F80520E /* PlatformAPIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAPIClientTests.swift; sourceTree = "<group>"; };
+		936B1BB2B5A6AC3D156F1E89 /* PlayTimeExtensionPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayTimeExtensionPickerView.swift; sourceTree = "<group>"; };
 		973DE612FB172320B29AEEAC /* PlatformModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformModels.swift; sourceTree = "<group>"; };
 		AA7FC302B6B27C9B1205963E /* EduGamesApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = EduGamesApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE48AFE25AD408A2244CF63D /* ParentZoneModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentZoneModels.swift; sourceTree = "<group>"; };
 		B340F97D6E7580D2A049094F /* CatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogView.swift; sourceTree = "<group>"; };
 		CF10EC35BFCCA10BE99CD7D4 /* ProfilePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePickerView.swift; sourceTree = "<group>"; };
 		D96120DD10D92C3C4527DD36 /* GameRuntimeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameRuntimeView.swift; sourceTree = "<group>"; };
@@ -79,6 +90,7 @@
 		F1DE997DD60BD551D663D584 /* EduGamesShellRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EduGamesShellRootView.swift; sourceTree = "<group>"; };
 		F43652D493A0E27F9B4EB134 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		FF278655A21C796AEA351645 /* AppDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDataStore.swift; sourceTree = "<group>"; };
+		FF2EC1F7797DB6DDC80B4D2A /* ParentZoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentZoneView.swift; sourceTree = "<group>"; };
 		FFCC33F8B19F675F21D9C634 /* PlatformAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAPIClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -112,6 +124,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		23799591CF30123AEEABE0AC /* ParentZone */ = {
+			isa = PBXGroup;
+			children = (
+				0CF867672B71DD78F184AD63 /* ParentGateView.swift */,
+				FF2EC1F7797DB6DDC80B4D2A /* ParentZoneView.swift */,
+				936B1BB2B5A6AC3D156F1E89 /* PlayTimeExtensionPickerView.swift */,
+				1A2B2ACDC2491001B79116D8 /* ReportIssueView.swift */,
+			);
+			path = ParentZone;
+			sourceTree = "<group>";
+		};
 		48EF5039A98F0D8F838D7F4A /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -126,6 +149,7 @@
 		55BA8B232EC3B206B98DF78F /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				AE48AFE25AD408A2244CF63D /* ParentZoneModels.swift */,
 				FFCC33F8B19F675F21D9C634 /* PlatformAPIClient.swift */,
 				973DE612FB172320B29AEEAC /* PlatformModels.swift */,
 				98078F2348A75EA29AFCA0EC /* Persistence */,
@@ -150,6 +174,7 @@
 				BD7131035427A547DB19E3F2 /* App */,
 				FA463E82E1821DFC4B27BAE4 /* Bootstrap */,
 				5DA94CBFE47E3259A3D5C616 /* ChildExperience */,
+				23799591CF30123AEEABE0AC /* ParentZone */,
 				55BA8B232EC3B206B98DF78F /* Shared */,
 			);
 			path = EduGamesApp;
@@ -231,6 +256,7 @@
 			children = (
 				EAEC5FEFE7D3FD2B6358B3F7 /* AppModelTests.swift */,
 				7D0C8D5F40BEA7A89C81C504 /* BootstrapServiceTests.swift */,
+				67D3DD44788FC2EC82ADD348 /* ParentZoneAndPlayTimeTests.swift */,
 				433C82398CD041B7F18190A1 /* PersistenceAndDecodingTests.swift */,
 				8C33CF68BD1ADC1E0F80520E /* PlatformAPIClientTests.swift */,
 			);
@@ -444,9 +470,14 @@
 				4D31AE1CFC234362616391A8 /* EduGamesShellRootView.swift in Sources */,
 				59D1303AFEAC2A7CDCFDD967 /* GameDetailView.swift in Sources */,
 				13DFB441F9A90ACE5C41FF32 /* GameRuntimeView.swift in Sources */,
+				7825B93B401BDC2A8BC60803 /* ParentGateView.swift in Sources */,
+				3D6E2669DAECE4B825790F72 /* ParentZoneModels.swift in Sources */,
+				FDA3FF7D043EDE75C4DBFAE6 /* ParentZoneView.swift in Sources */,
 				775B50D284C9C87D92A30CAE /* PlatformAPIClient.swift in Sources */,
 				E1CBCAF8C2304B944AFEF81A /* PlatformModels.swift in Sources */,
+				075E5B7888699F8EB84A0BAA /* PlayTimeExtensionPickerView.swift in Sources */,
 				75B099A68D817853F1B064CB /* ProfilePickerView.swift in Sources */,
+				8C3265979C2E0EF20AFAB27C /* ReportIssueView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -456,6 +487,7 @@
 			files = (
 				3D1D7B1643F99E980061994F /* AppModelTests.swift in Sources */,
 				FB300F5D8F2AE522D13ABACD /* BootstrapServiceTests.swift in Sources */,
+				1A9A0D34D2B0310A0A4527E5 /* ParentZoneAndPlayTimeTests.swift in Sources */,
 				3EF2F8CD96D9FA2F62DADE3B /* PersistenceAndDecodingTests.swift in Sources */,
 				FB5755303E0A47AC8BBEBF67 /* PlatformAPIClientTests.swift in Sources */,
 			);

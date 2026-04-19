@@ -260,7 +260,7 @@ describe("EduGames API routes", () => {
     expect(preschoolCatalog.json().sections[0].items[0].slug).toBe("shape-match");
 
     expect(latePrimaryCatalog.statusCode).toBe(200);
-    expect(latePrimaryCatalog.json().sections[0].items).toHaveLength(0);
+    expect(latePrimaryCatalog.json().sections).toEqual([]);
 
     expect(gameDetail.statusCode).toBe(200);
     expect(gameDetail.json().slug).toBe("shape-match");
@@ -271,6 +271,273 @@ describe("EduGames API routes", () => {
     expect(launchSession.json().bundle.bundleUrl).toMatch(/bundle\.zip$/);
 
     expect(blockedLaunch.statusCode).toBe(403);
+
+    await app.close();
+  });
+
+  it("accepts report submission and telemetry ingestion for authenticated installations", async () => {
+    const app = createApp();
+    const registration = (
+      await app.inject({
+        method: "POST",
+        url: "/v1/installations/register",
+        payload: {
+          appVersion: "1.0.0",
+          iosVersion: "26.4",
+          deviceClass: "iPad14,3",
+          locale: "en-US",
+          supportsAppAttest: true
+        }
+      })
+    ).json();
+    const authHeader = {
+      authorization: `Bearer ${registration.accessToken}`
+    };
+    const profile = (
+      await app.inject({
+        method: "POST",
+        url: "/v1/profiles",
+        headers: authHeader,
+        payload: {
+          ageBand: "PRESCHOOL_3_5",
+          avatarId: "fox-red"
+        }
+      })
+    ).json();
+    const launchSession = (
+      await app.inject({
+        method: "POST",
+        url: "/v1/launch-sessions",
+        headers: authHeader,
+        payload: {
+          profileId: profile.profileId,
+          gameId: "shape-match"
+        }
+      })
+    ).json();
+
+    const reportResponse = await app.inject({
+      method: "POST",
+      url: "/v1/reports",
+      headers: authHeader,
+      payload: {
+        profileId: profile.profileId,
+        gameId: "shape-match",
+        reason: "bug",
+        details: "The round froze after the first match."
+      }
+    });
+    const telemetryResponse = await app.inject({
+      method: "POST",
+      url: "/v1/telemetry/batches",
+      headers: authHeader,
+      payload: {
+        profileId: profile.profileId,
+        launchSessionId: launchSession.launchSessionId,
+        schemaVersion: 1,
+        events: [
+          {
+            ts: "2026-04-19T18:00:00Z",
+            type: "session_start"
+          },
+          {
+            ts: "2026-04-19T18:00:01Z",
+            type: "milestone",
+            name: "first-match",
+            value: 1
+          }
+        ]
+      }
+    });
+
+    expect(reportResponse.statusCode).toBe(201);
+    expect(reportResponse.json()).toEqual({
+      reportId: expect.stringMatching(/^rep_/),
+      status: "open"
+    });
+    expect(telemetryResponse.statusCode).toBe(202);
+    expect(telemetryResponse.json()).toEqual({ accepted: 2 });
+
+    await app.close();
+  });
+
+  it("supports moderation review and kill-switch flows for games", async () => {
+    const app = createApp({
+      config: {
+        adminApiKey: "admin-secret"
+      }
+    });
+    const registration = (
+      await app.inject({
+        method: "POST",
+        url: "/v1/installations/register",
+        payload: {
+          appVersion: "1.0.0",
+          iosVersion: "26.4",
+          deviceClass: "iPad14,3",
+          locale: "en-US",
+          supportsAppAttest: true
+        }
+      })
+    ).json();
+    const authHeader = {
+      authorization: `Bearer ${registration.accessToken}`
+    };
+    const adminHeader = {
+      "x-admin-api-key": "admin-secret"
+    };
+    const profile = (
+      await app.inject({
+        method: "POST",
+        url: "/v1/profiles",
+        headers: authHeader,
+        payload: {
+          ageBand: "PRESCHOOL_3_5",
+          avatarId: "fox-red"
+        }
+      })
+    ).json();
+    await app.inject({
+      method: "POST",
+      url: "/v1/reports",
+      headers: authHeader,
+      payload: {
+        profileId: profile.profileId,
+        gameId: "shape-match",
+        reason: "safety",
+        details: "Disable until reviewed."
+      }
+    });
+
+    const reviewBeforeDisable = await app.inject({
+      method: "GET",
+      url: "/v1/admin/games",
+      headers: adminHeader
+    });
+    const launchBeforeApproval = await app.inject({
+      method: "POST",
+      url: "/v1/launch-sessions",
+      headers: authHeader,
+      payload: {
+        profileId: profile.profileId,
+        gameId: "counting-kites"
+      }
+    });
+    const queuedApproval = await app.inject({
+      method: "POST",
+      url: "/v1/admin/games/counting-kites/approve",
+      headers: adminHeader
+    });
+    const disableGame = await app.inject({
+      method: "POST",
+      url: "/v1/admin/games/shape-match/disable",
+      headers: adminHeader,
+      payload: {
+        reason: "Safety escalation"
+      }
+    });
+    const catalogAfterDisable = await app.inject({
+      method: "GET",
+      url: `/v1/catalog?profileId=${profile.profileId}`,
+      headers: authHeader
+    });
+    const detailAfterDisable = await app.inject({
+      method: "GET",
+      url: `/v1/games/shape-match?profileId=${profile.profileId}`,
+      headers: authHeader
+    });
+    const launchAfterDisable = await app.inject({
+      method: "POST",
+      url: "/v1/launch-sessions",
+      headers: authHeader,
+      payload: {
+        profileId: profile.profileId,
+        gameId: "shape-match"
+      }
+    });
+    const enableGame = await app.inject({
+      method: "POST",
+      url: "/v1/admin/games/shape-match/enable",
+      headers: adminHeader
+    });
+    const reportsBeforeResolve = await app.inject({
+      method: "GET",
+      url: "/v1/admin/reports",
+      headers: adminHeader
+    });
+    const reportId = reportsBeforeResolve.json().reports[0]?.reportId;
+    const resolveReport = await app.inject({
+      method: "POST",
+      url: `/v1/admin/reports/${reportId}/resolve`,
+      headers: adminHeader
+    });
+
+    expect(reviewBeforeDisable.statusCode).toBe(200);
+    expect(reviewBeforeDisable.json().games).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          gameId: "shape-match",
+          status: "live",
+          openReportCount: 1
+        }),
+        expect.objectContaining({
+          gameId: "counting-kites",
+          status: "queued"
+        })
+      ])
+    );
+    expect(launchBeforeApproval.statusCode).toBe(404);
+    expect(queuedApproval.statusCode).toBe(200);
+    expect(queuedApproval.json()).toEqual({
+      gameId: "counting-kites",
+      status: "live",
+      disabledAt: null,
+      disabledReason: null
+    });
+
+    expect(disableGame.statusCode).toBe(200);
+    expect(disableGame.json()).toEqual({
+      gameId: "shape-match",
+      status: "disabled",
+      disabledAt: expect.any(String),
+      disabledReason: "Safety escalation"
+    });
+
+    expect(catalogAfterDisable.statusCode).toBe(200);
+    expect(catalogAfterDisable.json().sections).toEqual([
+      expect.objectContaining({
+        key: "new-and-noteworthy",
+        items: [
+          expect.objectContaining({
+            gameId: "counting-kites",
+            slug: "counting-kites"
+          })
+        ]
+      })
+    ]);
+    expect(detailAfterDisable.statusCode).toBe(404);
+    expect(launchAfterDisable.statusCode).toBe(403);
+
+    expect(enableGame.statusCode).toBe(200);
+    expect(enableGame.json()).toEqual({
+      gameId: "shape-match",
+      status: "live",
+      disabledAt: null,
+      disabledReason: null
+    });
+    expect(reportsBeforeResolve.statusCode).toBe(200);
+    expect(reportsBeforeResolve.json().reports).toEqual([
+      expect.objectContaining({
+        gameId: "shape-match",
+        status: "open",
+        reason: "safety"
+      })
+    ]);
+    expect(resolveReport.statusCode).toBe(200);
+    expect(resolveReport.json()).toEqual({
+      reportId,
+      status: "resolved"
+    });
 
     await app.close();
   });

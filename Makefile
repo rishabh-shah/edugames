@@ -1,6 +1,6 @@
 SHELL := /bin/zsh
 
-.PHONY: install build test lint typecheck verify dev
+.PHONY: install build test lint typecheck verify dev test-playwright test-sample-game validate-sample-game
 
 install:
 	pnpm install
@@ -22,3 +22,12 @@ verify:
 
 dev:
 	pnpm dev
+
+test-playwright:
+	pnpm test:playwright
+
+test-sample-game:
+	pnpm test:sample-game
+
+validate-sample-game:
+	pnpm --filter @edugames/game-validator validate ../../games/shape-match

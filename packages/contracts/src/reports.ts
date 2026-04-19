@@ -15,3 +15,7 @@ export const createReportResponseSchema = z.object({
   reportId: reportIdSchema,
   status: z.literal("open")
 });
+
+export type CreateReportRequest = z.infer<typeof createReportRequestSchema>;
+export type CreateReportResponse = z.infer<typeof createReportResponseSchema>;
+export type ReportReason = z.infer<typeof reportReasonSchema>;

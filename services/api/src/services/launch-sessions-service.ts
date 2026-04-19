@@ -39,10 +39,22 @@ export class LaunchSessionsService {
   ): LaunchSessionResponse {
     const profile = this.getOwnedProfile(installationId, payload.profileId);
     const cohort = this.repository.getInstallation(installationId)?.cohort ?? "general";
-    const game = this.repository.getPublishedGameByGameId(payload.gameId, cohort);
+    const game = this.repository.getPublishedGameRecord(payload.gameId);
 
     if (!game) {
       throw new ApiError(404, "Game not found.");
+    }
+
+    if (game.cohort !== cohort) {
+      throw new ApiError(404, "Game not found.");
+    }
+
+    if (game.status === "queued") {
+      throw new ApiError(404, "Game not found.");
+    }
+
+    if (game.status === "disabled") {
+      throw new ApiError(403, "Game is disabled.");
     }
 
     if (!isAgeBandWithinRange(profile.ageBand, game.minAgeBand, game.maxAgeBand)) {

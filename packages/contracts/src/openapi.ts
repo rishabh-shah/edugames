@@ -15,9 +15,24 @@ import {
   registerInstallationResponseSchema
 } from "./installations.js";
 import {
+  createReportRequestSchema,
+  createReportResponseSchema
+} from "./reports.js";
+import {
+  createModerationActionResponseSchema,
+  listModerationGamesResponseSchema,
+  listModerationReportsResponseSchema,
+  moderationReasonRequestSchema,
+  resolveModerationReportResponseSchema
+} from "./moderation.js";
+import {
   launchSessionRequestSchema,
   launchSessionResponseSchema
 } from "./launch.js";
+import {
+  telemetryBatchRequestSchema,
+  telemetryBatchResponseSchema
+} from "./telemetry.js";
 type OpenApiSchemaRef = {
   $ref: string;
 };
@@ -69,7 +84,16 @@ const schemaEntries = {
   CatalogResponse: catalogResponseSchema,
   GameDetailResponse: gameDetailResponseSchema,
   LaunchSessionRequest: launchSessionRequestSchema,
-  LaunchSessionResponse: launchSessionResponseSchema
+  LaunchSessionResponse: launchSessionResponseSchema,
+  CreateReportRequest: createReportRequestSchema,
+  CreateReportResponse: createReportResponseSchema,
+  TelemetryBatchRequest: telemetryBatchRequestSchema,
+  TelemetryBatchResponse: telemetryBatchResponseSchema,
+  ListModerationGamesResponse: listModerationGamesResponseSchema,
+  ListModerationReportsResponse: listModerationReportsResponseSchema,
+  ModerationReasonRequest: moderationReasonRequestSchema,
+  ModerationActionResponse: createModerationActionResponseSchema,
+  ResolveModerationReportResponse: resolveModerationReportResponseSchema
 };
 
 const ref = (name: keyof typeof schemaEntries): OpenApiSchemaRef => ({
@@ -227,6 +251,150 @@ export const createOpenApiDocument = (version = "0.1.0"): OpenApiDocument => ({
             content: {
               "application/json": {
                 schema: ref("LaunchSessionResponse")
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reports": {
+      post: {
+        operationId: "createReport",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: ref("CreateReportRequest")
+            }
+          }
+        },
+        responses: {
+          "201": {
+            description: "Report submitted",
+            content: {
+              "application/json": {
+                schema: ref("CreateReportResponse")
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/telemetry/batches": {
+      post: {
+        operationId: "ingestTelemetryBatch",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: ref("TelemetryBatchRequest")
+            }
+          }
+        },
+        responses: {
+          "202": {
+            description: "Telemetry batch accepted",
+            content: {
+              "application/json": {
+                schema: ref("TelemetryBatchResponse")
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/games": {
+      get: {
+        operationId: "listModerationGames",
+        responses: {
+          "200": {
+            description: "Games listed for moderation review",
+            content: {
+              "application/json": {
+                schema: ref("ListModerationGamesResponse")
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/games/{gameId}/disable": {
+      post: {
+        operationId: "disableGame",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: ref("ModerationReasonRequest")
+            }
+          }
+        },
+        responses: {
+          "200": {
+            description: "Game disabled",
+            content: {
+              "application/json": {
+                schema: ref("ModerationActionResponse")
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/games/{gameId}/approve": {
+      post: {
+        operationId: "approveGame",
+        responses: {
+          "200": {
+            description: "Queued game approved and made live",
+            content: {
+              "application/json": {
+                schema: ref("ModerationActionResponse")
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/games/{gameId}/enable": {
+      post: {
+        operationId: "enableGame",
+        responses: {
+          "200": {
+            description: "Game enabled",
+            content: {
+              "application/json": {
+                schema: ref("ModerationActionResponse")
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/reports": {
+      get: {
+        operationId: "listModerationReports",
+        responses: {
+          "200": {
+            description: "Reports listed for moderation review",
+            content: {
+              "application/json": {
+                schema: ref("ListModerationReportsResponse")
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/reports/{reportId}/resolve": {
+      post: {
+        operationId: "resolveReport",
+        responses: {
+          "200": {
+            description: "Report marked resolved",
+            content: {
+              "application/json": {
+                schema: ref("ResolveModerationReportResponse")
               }
             }
           }

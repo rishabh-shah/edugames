@@ -14,15 +14,25 @@ struct CatalogView: View {
             if let selectedProfile = model.selectedProfile {
               Text("Browsing as \(selectedProfile.displayTitle)")
                 .foregroundStyle(.secondary)
+              Text("Play time limit: \(model.playTimeLimit(for: selectedProfile).durationLabel)")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
             }
           }
 
           Spacer()
 
-          Button("Switch Profile") {
-            model.backToProfiles()
+          HStack(spacing: 12) {
+            Button("Parent Zone") {
+              model.requestParentZoneAccess(returningTo: .catalog)
+            }
+            .buttonStyle(.bordered)
+
+            Button("Switch Profile") {
+              model.backToProfiles()
+            }
+            .buttonStyle(.borderedProminent)
           }
-          .buttonStyle(.borderedProminent)
         }
 
         if let errorMessage = model.bootstrapErrorMessage {

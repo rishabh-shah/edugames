@@ -20,6 +20,12 @@ struct GameRuntimeView: View {
               Text("Playing as \(selectedProfile.displayTitle)")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+              if let playTimeSession = model.playTimeSession {
+                Text(playTimeSession.remainingLabel)
+                  .font(.caption.monospacedDigit().weight(.semibold))
+                  .foregroundStyle(.secondary)
+                  .accessibilityIdentifier("playtime-remaining-label")
+              }
               Text(isRuntimeReady ? "Runtime ready" : "Loading game...")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(isRuntimeReady ? .green : .secondary)
@@ -30,11 +36,46 @@ struct GameRuntimeView: View {
 
             Spacer()
 
-            Button("Exit Game") {
-              model.exitActiveGame()
+            VStack(alignment: .trailing, spacing: 10) {
+              if let playTimeSession = model.playTimeSession {
+                switch playTimeSession.warningState {
+                case .none:
+                  EmptyView()
+                case .fiveMinutesRemaining:
+                  warningBadge(
+                    text: "5 minutes left",
+                    color: Color.orange,
+                    identifier: "playtime-warning-five-minutes"
+                  )
+                case .oneMinuteRemaining:
+                  warningBadge(
+                    text: "1 minute left",
+                    color: Color.red,
+                    identifier: "playtime-warning-one-minute"
+                  )
+                }
+              }
+
+              HStack(spacing: 12) {
+                Button("Add Time") {
+                  model.requestPlayTimeExtension()
+                }
+                .buttonStyle(.bordered)
+                .accessibilityIdentifier("extend-playtime-button")
+
+                Button("Report Problem") {
+                  model.requestRuntimeReport()
+                }
+                .buttonStyle(.bordered)
+                .accessibilityIdentifier("report-problem-button")
+
+                Button("Exit Game") {
+                  model.exitActiveGame()
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("exit-runtime-button")
+              }
             }
-            .buttonStyle(.borderedProminent)
-            .accessibilityIdentifier("exit-runtime-button")
           }
           .padding(.horizontal, 24)
           .padding(.vertical, 18)
@@ -46,6 +87,9 @@ struct GameRuntimeView: View {
             saveStateRepository: model.saveStateRepository,
             onRuntimeReady: {
               isRuntimeReady = true
+            },
+            onTelemetryEvent: { name, value in
+              model.recordRuntimeEvent(name: name, value: value)
             },
             onRequestExit: {
               model.exitActiveGame()
@@ -67,6 +111,17 @@ struct GameRuntimeView: View {
       isRuntimeReady = false
     }
   }
+
+  @ViewBuilder
+  private func warningBadge(text: String, color: Color, identifier: String) -> some View {
+    Text(text)
+      .font(.caption.weight(.bold))
+      .padding(.horizontal, 10)
+      .padding(.vertical, 8)
+      .background(color.opacity(0.16), in: Capsule())
+      .foregroundStyle(color)
+      .accessibilityIdentifier(identifier)
+  }
 }
 
 private struct GameRuntimeWebView: UIViewRepresentable {
@@ -74,6 +129,7 @@ private struct GameRuntimeWebView: UIViewRepresentable {
   let profileId: String
   let saveStateRepository: SaveStateRepository
   let onRuntimeReady: @MainActor () -> Void
+  let onTelemetryEvent: @MainActor (String, Int) -> Void
   let onRequestExit: @MainActor () -> Void
 
   func makeCoordinator() -> Coordinator {
@@ -82,6 +138,7 @@ private struct GameRuntimeWebView: UIViewRepresentable {
       profileId: profileId,
       saveStateRepository: saveStateRepository,
       onRuntimeReady: onRuntimeReady,
+      onTelemetryEvent: onTelemetryEvent,
       onRequestExit: onRequestExit
     )
   }
@@ -191,6 +248,7 @@ private struct GameRuntimeWebView: UIViewRepresentable {
     var profileId: String
     private let saveStateRepository: SaveStateRepository
     private let onRuntimeReady: @MainActor () -> Void
+    private let onTelemetryEvent: @MainActor (String, Int) -> Void
     private let onRequestExit: @MainActor () -> Void
 
     init(
@@ -198,12 +256,14 @@ private struct GameRuntimeWebView: UIViewRepresentable {
       profileId: String,
       saveStateRepository: SaveStateRepository,
       onRuntimeReady: @escaping @MainActor () -> Void,
+      onTelemetryEvent: @escaping @MainActor (String, Int) -> Void,
       onRequestExit: @escaping @MainActor () -> Void
     ) {
       self.launchDetails = launchDetails
       self.profileId = profileId
       self.saveStateRepository = saveStateRepository
       self.onRuntimeReady = onRuntimeReady
+      self.onTelemetryEvent = onTelemetryEvent
       self.onRequestExit = onRequestExit
     }
 
@@ -237,6 +297,13 @@ private struct GameRuntimeWebView: UIViewRepresentable {
       case "request-exit":
         Task { @MainActor in
           onRequestExit()
+        }
+      case "event":
+        if let name = payload["name"] as? String {
+          let value = payload["value"] as? Int ?? 1
+          Task { @MainActor in
+            onTelemetryEvent(name, value)
+          }
         }
       case "save-state":
         if let state = payload["state"] {
@@ -296,7 +363,7 @@ private struct GameRuntimeWebView: UIViewRepresentable {
 
     private func resolve(callId: Int, json: String, webView: WKWebView) {
       evaluateJavaScript(
-        "window.__edugamesBridgeCallbacks.resolve(\\(callId), \\(json));",
+        "window.__edugamesBridgeCallbacks.resolve(\(callId), \(json));",
         webView: webView
       )
     }
@@ -306,7 +373,7 @@ private struct GameRuntimeWebView: UIViewRepresentable {
         .replacingOccurrences(of: "\\", with: "\\\\")
         .replacingOccurrences(of: "\"", with: "\\\"")
       evaluateJavaScript(
-        "window.__edugamesBridgeCallbacks.reject(\\(callId), \"\\(escapedMessage)\");",
+        "window.__edugamesBridgeCallbacks.reject(\(callId), \"\(escapedMessage)\");",
         webView: webView
       )
     }

@@ -228,6 +228,129 @@ final class PlatformAPIClientTests: XCTestCase {
     XCTAssertEqual(payload.gameId, "shape-match")
   }
 
+  func testSubmitReportUsesInstallationTokenAndRequestBody() async throws {
+    let recorder = HTTPRequestRecorder()
+    let responseBody = """
+    {
+      "reportId": "rep_live_01",
+      "status": "open"
+    }
+    """.data(using: .utf8)!
+
+    let client = await makeClient(
+      recorder: recorder,
+      response: .json(statusCode: 201, body: responseBody)
+    )
+    let session = InstallationSession(
+      installationId: "inst_live_01",
+      accessToken: "access_token_abcdefghijklmnopqrstuvwxyz1234",
+      refreshToken: "refresh_token_abcdefghijklmnopqrstuvwxyz5678"
+    )
+
+    let response = try await client.submitReport(
+      session: session,
+      profileId: "prof_live_01",
+      gameId: "shape-match",
+      reason: .bug,
+      details: "The round froze after the first match."
+    )
+
+    let request = try XCTUnwrap(recorder.lastRequest)
+    let body = try requestBody(from: request)
+    let payload = try JSONDecoder().decode(CreateReportPayload.self, from: body)
+
+    XCTAssertEqual(response.reportId, "rep_live_01")
+    XCTAssertEqual(request.url?.path, "/v1/reports")
+    XCTAssertEqual(request.httpMethod, "POST")
+    XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer \(session.accessToken)")
+    XCTAssertEqual(payload.profileId, "prof_live_01")
+    XCTAssertEqual(payload.gameId, "shape-match")
+    XCTAssertEqual(payload.reason, "bug")
+  }
+
+  func testSubmitReportEncodesNilDetailsAsExplicitNull() async throws {
+    let recorder = HTTPRequestRecorder()
+    let responseBody = """
+    {
+      "reportId": "rep_live_02",
+      "status": "open"
+    }
+    """.data(using: .utf8)!
+
+    let client = await makeClient(
+      recorder: recorder,
+      response: .json(statusCode: 201, body: responseBody)
+    )
+    let session = InstallationSession(
+      installationId: "inst_live_01",
+      accessToken: "access_token_abcdefghijklmnopqrstuvwxyz1234",
+      refreshToken: "refresh_token_abcdefghijklmnopqrstuvwxyz5678"
+    )
+
+    _ = try await client.submitReport(
+      session: session,
+      profileId: "prof_live_01",
+      gameId: "shape-match",
+      reason: .other,
+      details: nil
+    )
+
+    let request = try XCTUnwrap(recorder.lastRequest)
+    let body = try requestBody(from: request)
+    let payload = try XCTUnwrap(
+      JSONSerialization.jsonObject(with: body) as? [String: Any]
+    )
+
+    XCTAssertTrue(payload.keys.contains("details"))
+    XCTAssertTrue(payload["details"] is NSNull)
+  }
+
+  func testIngestTelemetryUsesInstallationTokenAndRequestBody() async throws {
+    let recorder = HTTPRequestRecorder()
+    let responseBody = """
+    {
+      "accepted": 2
+    }
+    """.data(using: .utf8)!
+
+    let client = await makeClient(
+      recorder: recorder,
+      response: .json(statusCode: 202, body: responseBody)
+    )
+    let session = InstallationSession(
+      installationId: "inst_live_01",
+      accessToken: "access_token_abcdefghijklmnopqrstuvwxyz1234",
+      refreshToken: "refresh_token_abcdefghijklmnopqrstuvwxyz5678"
+    )
+
+    let response = try await client.ingestTelemetryBatch(
+      session: session,
+      profileId: "prof_live_01",
+      launchSessionId: "ls_123abc",
+      events: [
+        .sessionStart(at: "2026-04-19T19:30:00.000Z"),
+        .milestone(
+          named: "first-match",
+          value: 1,
+          at: "2026-04-19T19:30:02.000Z"
+        )
+      ]
+    )
+
+    let request = try XCTUnwrap(recorder.lastRequest)
+    let body = try requestBody(from: request)
+    let payload = try JSONDecoder().decode(CreateTelemetryBatchPayload.self, from: body)
+
+    XCTAssertEqual(response.accepted, 2)
+    XCTAssertEqual(request.url?.path, "/v1/telemetry/batches")
+    XCTAssertEqual(request.httpMethod, "POST")
+    XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer \(session.accessToken)")
+    XCTAssertEqual(payload.profileId, "prof_live_01")
+    XCTAssertEqual(payload.launchSessionId, "ls_123abc")
+    XCTAssertEqual(payload.events.map(\.type), ["session_start", "milestone"])
+    XCTAssertEqual(payload.events[1].name, "first-match")
+  }
+
   private func makeClient(
     recorder: HTTPRequestRecorder,
     response: StubbedResponse,
@@ -397,4 +520,18 @@ private struct CreateProfilePayload: Decodable {
 private struct CreateLaunchSessionPayload: Decodable {
   let profileId: String
   let gameId: String
+}
+
+private struct CreateReportPayload: Decodable {
+  let profileId: String
+  let gameId: String
+  let reason: String
+  let details: String?
+}
+
+private struct CreateTelemetryBatchPayload: Decodable {
+  let profileId: String
+  let launchSessionId: String
+  let schemaVersion: Int
+  let events: [TelemetryEventPayload]
 }

@@ -15,6 +15,31 @@ Prepare and submit the iOS shell for Apple review without missing kids-category 
 - The build matches `docs/implementation-decisions.md`.
 - Child-directed constraints are still true: no ads, no chat, no open marketplace, no in-game login, and reviewed HTML5 content only.
 - Parent Zone and parental gate behavior are working in the release candidate.
+- The latest macOS CI run for `apps/ios-shell` passed and uploaded a readable `.xcresult` bundle.
+- The checked-in iOS project can still be built with `xcodebuild` on a machine that has Xcode installed.
+
+## Local / CI Verification
+
+Before submission, confirm the current validation set is green:
+
+```sh
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:integration
+pnpm build
+pnpm test:sample-game
+pnpm exec playwright install --with-deps chromium webkit
+pnpm test:playwright
+```
+
+If the submission includes native shell changes, rerun the iOS build/tests on macOS:
+
+```sh
+cd /Users/shrutishah/Desktop/Codebase/edugames/apps/ios-shell
+xcodebuild -project EduGamesApp.xcodeproj -scheme EduGamesApp -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=26.4' test
+```
 
 ## Submission Checklist
 

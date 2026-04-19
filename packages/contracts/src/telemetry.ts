@@ -36,3 +36,4 @@ export const telemetryBatchResponseSchema = z.object({
 
 export type TelemetryEvent = z.infer<typeof telemetryEventSchema>;
 export type TelemetryBatchRequest = z.infer<typeof telemetryBatchRequestSchema>;
+export type TelemetryBatchResponse = z.infer<typeof telemetryBatchResponseSchema>;

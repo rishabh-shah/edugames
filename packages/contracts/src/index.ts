@@ -4,6 +4,7 @@ export * from "./common.js";
 export * from "./installations.js";
 export * from "./launch.js";
 export * from "./manifest.js";
+export * from "./moderation.js";
 export * from "./openapi.js";
 export * from "./profiles.js";
 export * from "./reports.js";

@@ -1,0 +1,260 @@
+:root {
+  color-scheme: light;
+  --ink: #152433;
+  --muted: #5f6b76;
+  --line: rgba(21, 36, 51, 0.1);
+  --surface: rgba(255, 255, 255, 0.76);
+  --surface-strong: rgba(255, 255, 255, 0.92);
+  --accent: #155eef;
+  --accent-soft: rgba(21, 94, 239, 0.12);
+  --danger: #c43232;
+  --danger-soft: rgba(196, 50, 50, 0.14);
+  --success: #0a7a43;
+  --canvas-a: #fff4d8;
+  --canvas-b: #e7f4f2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+  background:
+    radial-gradient(circle at top right, rgba(21, 94, 239, 0.14), transparent 28%),
+    radial-gradient(circle at left center, rgba(255, 181, 71, 0.18), transparent 30%),
+    linear-gradient(180deg, var(--canvas-a), var(--canvas-b));
+  color: var(--ink);
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+}
+
+button.danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.dashboard-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.hero-panel,
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: 0 18px 60px rgba(29, 48, 66, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.hero-panel {
+  padding: 2rem;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1.4fr 1fr;
+}
+
+.hero-panel h1,
+.panel h2,
+.queue-card h3 {
+  margin: 0;
+}
+
+.hero-copy {
+  max-width: 56ch;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.hero-stats article,
+.telemetry-grid article {
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 1rem;
+}
+
+.hero-stats span,
+.telemetry-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.hero-stats strong,
+.telemetry-grid strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 2rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1.5rem;
+}
+
+.stack {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.panel {
+  padding: 1.5rem;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.queue-list,
+.report-list,
+.audit-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.queue-card {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr auto;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface-strong);
+}
+
+.queue-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.queue-copy p,
+.telemetry-grid p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+}
+
+.timestamp {
+  font-size: 0.92rem;
+}
+
+.flag-row,
+.queue-actions,
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(21, 36, 51, 0.08);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-pill.disabled {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.status-pill.live {
+  background: rgba(10, 122, 67, 0.14);
+  color: var(--success);
+}
+
+.status-pill.queued {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.report-list li,
+.audit-list li {
+  display: grid;
+  gap: 0.4rem;
+  grid-template-columns: 1fr auto;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.report-list li:first-child,
+.audit-list li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.telemetry-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.error-banner {
+  margin: 1rem 0 0;
+  padding: 0.9rem 1rem;
+  border-radius: 18px;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+@media (max-width: 960px) {
+  .hero-panel,
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .queue-card,
+  .report-list li {
+    grid-template-columns: 1fr;
+  }
+}

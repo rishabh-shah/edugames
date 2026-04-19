@@ -125,6 +125,67 @@ struct AppModelTests {
     #expect(model.bootstrapErrorMessage == nil)
   }
 
+  @Test("launching and exiting uploads session telemetry including runtime milestones")
+  func exitingRuntimeFlushesTelemetry() async throws {
+    let recordingClient = RecordingPlatformAPIClient()
+    let model = try makeModel(
+      bootstrapAPIClient: recordingClient,
+      runtimeAPIClient: recordingClient
+    )
+
+    await model.bootstrap()
+    await model.selectProfile(model.profiles[0])
+    await model.selectGame(model.catalog?.sections[0].items[0] ?? CatalogResponse.sample.sections[0].items[0])
+    await model.launchSelectedGame()
+
+    model.recordRuntimeEvent(name: "milestone:first-match", value: 1)
+    model.exitActiveGame()
+    await recordingClient.waitForTelemetryBatch(count: 1)
+
+    #expect(recordingClient.telemetryBatches.count == 1)
+    #expect(recordingClient.telemetryBatches[0].profileId == "prof_fixture_01")
+    #expect(recordingClient.telemetryBatches[0].events.map(\.type) == [
+      "session_start",
+      "milestone",
+      "session_end"
+    ])
+    #expect(recordingClient.telemetryBatches[0].events[1].name == "first-match")
+  }
+
+  @Test("runtime reports stay behind the parent gate and submit through the bootstrap client")
+  func runtimeReportFlowSubmitsAfterParentGate() async throws {
+    let recordingClient = RecordingPlatformAPIClient()
+    let model = try makeModel(
+      bootstrapAPIClient: recordingClient,
+      runtimeAPIClient: recordingClient
+    )
+
+    await model.bootstrap()
+    await model.selectProfile(model.profiles[0])
+    await model.selectGame(model.catalog?.sections[0].items[0] ?? CatalogResponse.sample.sections[0].items[0])
+    await model.launchSelectedGame()
+
+    model.requestRuntimeReport()
+
+    #expect(model.isParentGatePresented)
+    #expect(model.isReportIssuePresented == false)
+
+    model.submitParentGateAnswer(12)
+
+    #expect(model.isReportIssuePresented)
+
+    await model.submitRuntimeReport(
+      reason: .bug,
+      details: "The round froze after the first match."
+    )
+
+    #expect(recordingClient.submittedReports.count == 1)
+    #expect(recordingClient.submittedReports[0].gameId == "shape-match")
+    #expect(recordingClient.submittedReports[0].reason == .bug)
+    #expect(model.isReportIssuePresented == false)
+    #expect(model.reportSubmissionErrorMessage == nil)
+  }
+
   @Test("the latest game selection wins when detail requests finish out of order")
   func latestGameSelectionWinsOutOfOrderResponses() async throws {
     let apiClient = DelayedDetailPlatformAPIClient()
@@ -246,7 +307,8 @@ struct AppModelTests {
         sessionStore: sessionStore,
         profileRepository: profileRepository
       ),
-      runtimeLaunchService: launchService
+      runtimeLaunchService: launchService,
+      parentGateChallengeFactory: StableParentGateChallengeFactory()
     )
   }
 }
@@ -323,6 +385,25 @@ private final class DelayedDetailPlatformAPIClient: PlatformAPIClient {
     LaunchSessionResponse.fixture
   }
 
+  func submitReport(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String,
+    reason: ReportReason,
+    details: String?
+  ) async throws -> ReportSubmissionResponse {
+    ReportSubmissionResponse(reportId: "rep_fixture_123abc", status: "open")
+  }
+
+  func ingestTelemetryBatch(
+    session: InstallationSession,
+    profileId: String,
+    launchSessionId: String,
+    events: [TelemetryEventPayload]
+  ) async throws -> TelemetryBatchResponse {
+    TelemetryBatchResponse(accepted: events.count)
+  }
+
   func waitForPendingDetailRequests(count: Int) async {
     while detailContinuations.count < count {
       await Task.yield()
@@ -385,6 +466,25 @@ private final class DelayedLaunchPlatformAPIClient: PlatformAPIClient {
     }
   }
 
+  func submitReport(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String,
+    reason: ReportReason,
+    details: String?
+  ) async throws -> ReportSubmissionResponse {
+    ReportSubmissionResponse(reportId: "rep_fixture_123abc", status: "open")
+  }
+
+  func ingestTelemetryBatch(
+    session: InstallationSession,
+    profileId: String,
+    launchSessionId: String,
+    events: [TelemetryEventPayload]
+  ) async throws -> TelemetryBatchResponse {
+    TelemetryBatchResponse(accepted: events.count)
+  }
+
   func waitForPendingLaunchRequest() async {
     while launchContinuation == nil {
       await Task.yield()
@@ -394,6 +494,125 @@ private final class DelayedLaunchPlatformAPIClient: PlatformAPIClient {
   func resumeLaunch(with launchSession: LaunchSessionResponse) {
     launchContinuation?.resume(returning: launchSession)
     launchContinuation = nil
+  }
+}
+
+@MainActor
+private final class RecordingPlatformAPIClient: PlatformAPIClient {
+  struct SubmittedReport {
+    let profileId: String
+    let gameId: String
+    let reason: ReportReason
+    let details: String?
+  }
+
+  struct SubmittedTelemetryBatch {
+    let profileId: String
+    let launchSessionId: String
+    let events: [TelemetryEventPayload]
+  }
+
+  private(set) var submittedReports: [SubmittedReport] = []
+  private(set) var telemetryBatches: [SubmittedTelemetryBatch] = []
+
+  func registerInstallation() async throws -> InstallationSession {
+    InstallationSession(
+      installationId: "inst_fixture_ios",
+      accessToken: "access_fixture_token_1234567890abcdefghijklmnop",
+      refreshToken: "refresh_fixture_token_1234567890abcdefghijklmnop"
+    )
+  }
+
+  func createProfile(
+    session: InstallationSession,
+    ageBand: String,
+    avatarId: String
+  ) async throws -> ChildProfile {
+    ChildProfile(
+      id: "prof_fixture_01",
+      ageBand: ageBand,
+      avatarId: avatarId,
+      createdAt: "2026-04-19T19:10:00Z",
+      lastActiveAt: "2026-04-19T19:10:00Z"
+    )
+  }
+
+  func fetchCatalog(
+    session: InstallationSession,
+    profileId: String
+  ) async throws -> CatalogResponse {
+    CatalogResponse.sample
+  }
+
+  func fetchGameDetail(
+    session: InstallationSession,
+    profileId: String,
+    slug: String
+  ) async throws -> GameDetailResponse {
+    GameDetailResponse.sample
+  }
+
+  func createLaunchSession(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String
+  ) async throws -> LaunchSessionResponse {
+    LaunchSessionResponse.fixture
+  }
+
+  func submitReport(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String,
+    reason: ReportReason,
+    details: String?
+  ) async throws -> ReportSubmissionResponse {
+    submittedReports.append(
+      SubmittedReport(
+        profileId: profileId,
+        gameId: gameId,
+        reason: reason,
+        details: details
+      )
+    )
+
+    return ReportSubmissionResponse(
+      reportId: "rep_recorded_123abc",
+      status: "open"
+    )
+  }
+
+  func ingestTelemetryBatch(
+    session: InstallationSession,
+    profileId: String,
+    launchSessionId: String,
+    events: [TelemetryEventPayload]
+  ) async throws -> TelemetryBatchResponse {
+    telemetryBatches.append(
+      SubmittedTelemetryBatch(
+        profileId: profileId,
+        launchSessionId: launchSessionId,
+        events: events
+      )
+    )
+
+    return TelemetryBatchResponse(accepted: events.count)
+  }
+
+  func waitForTelemetryBatch(count: Int) async {
+    while telemetryBatches.count < count {
+      await Task.yield()
+    }
+  }
+}
+
+private struct StableParentGateChallengeFactory: ParentGateChallengeFactory {
+  func makeChallenge() -> ParentGateChallenge {
+    ParentGateChallenge(
+      prompt: "For parents: what is 7 + 5?",
+      answer: 12,
+      choices: [11, 12, 13]
+    )
   }
 }
 

@@ -28,7 +28,9 @@ export class CatalogService {
   list(installationId: string, profileId: string): CatalogResponse {
     const profile = this.getOwnedProfile(installationId, profileId);
     const cohort = this.repository.getInstallation(installationId)?.cohort ?? "general";
-    const games = this.repository.listPublishedGamesForCohort(cohort);
+    const games = this.repository
+      .listPublishedGames()
+      .filter((game) => game.cohort === cohort);
     const sectionMap = new Map<string, { key: string; title: string; items: CatalogResponse["sections"][number]["items"] }>();
 
     for (const game of games) {
@@ -40,7 +42,10 @@ export class CatalogService {
         });
       }
 
-      if (isAgeBandWithinRange(profile.ageBand, game.minAgeBand, game.maxAgeBand)) {
+      if (
+        game.status === "live" &&
+        isAgeBandWithinRange(profile.ageBand, game.minAgeBand, game.maxAgeBand)
+      ) {
         sectionMap.get(game.sectionKey)?.items.push({
           gameId: game.gameId,
           slug: game.slug,
@@ -56,7 +61,7 @@ export class CatalogService {
 
     return {
       generatedAt: this.clock.now().toISOString(),
-      sections: [...sectionMap.values()]
+      sections: [...sectionMap.values()].filter((section) => section.items.length > 0)
     };
   }
 

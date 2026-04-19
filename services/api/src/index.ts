@@ -4,4 +4,7 @@ export * from "./repositories/in-memory-platform-repository.js";
 export * from "./services/catalog-service.js";
 export * from "./services/installations-service.js";
 export * from "./services/launch-sessions-service.js";
+export * from "./services/moderation-service.js";
 export * from "./services/profiles-service.js";
+export * from "./services/reports-service.js";
+export * from "./services/telemetry-service.js";

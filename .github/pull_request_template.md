@@ -16,7 +16,10 @@
 - [ ] `pnpm typecheck`
 - [ ] `pnpm test`
 - [ ] `pnpm build`
-- [ ] `pnpm test:e2e` when applicable
+- [ ] `pnpm test:sample-game` when game assets or runtime wiring changed
+- [ ] `pnpm exec playwright install --with-deps chromium webkit` if browsers are not already installed
+- [ ] `pnpm test:playwright` when browser-side sample-game behavior changed
+- [ ] `xcodebuild` on macOS when iOS shell changes landed
 
 ## Notes
 

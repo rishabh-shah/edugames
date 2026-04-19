@@ -2,6 +2,25 @@ name: ci-playwright
 
 on:
   pull_request:
+    paths:
+      - "games/**"
+      - "packages/**"
+      - ".github/workflows/ci-playwright.yml"
+      - ".github/workflows/ci-games.yml"
+      - "Makefile"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+  push:
+    branches:
+      - main
+    paths:
+      - "games/**"
+      - "packages/**"
+      - ".github/workflows/ci-playwright.yml"
+      - ".github/workflows/ci-games.yml"
+      - "Makefile"
+      - "package.json"
+      - "pnpm-workspace.yaml"
   workflow_dispatch:
 
 permissions:
@@ -36,7 +55,7 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium webkit
 
       - name: Run Playwright
-        run: pnpm test:e2e
+        run: pnpm test:playwright
 
       - name: Upload Playwright report
         if: always()

@@ -111,6 +111,64 @@ struct LaunchSessionResponse: Codable, Equatable {
   let cachePolicy: LaunchCachePolicy
 }
 
+enum ReportReason: String, CaseIterable, Codable, Equatable, Sendable {
+  case bug
+  case safety
+  case content
+  case other
+
+  var displayTitle: String {
+    rawValue.capitalized
+  }
+}
+
+struct ReportSubmissionResponse: Codable, Equatable, Sendable {
+  let reportId: String
+  let status: String
+}
+
+struct TelemetryEventPayload: Codable, Equatable, Sendable {
+  let ts: String
+  let type: String
+  let name: String?
+  let value: Int?
+
+  static func sessionStart(at timestamp: String) -> TelemetryEventPayload {
+    TelemetryEventPayload(
+      ts: timestamp,
+      type: "session_start",
+      name: nil,
+      value: nil
+    )
+  }
+
+  static func sessionEnd(at timestamp: String) -> TelemetryEventPayload {
+    TelemetryEventPayload(
+      ts: timestamp,
+      type: "session_end",
+      name: nil,
+      value: nil
+    )
+  }
+
+  static func milestone(
+    named name: String,
+    value: Int,
+    at timestamp: String
+  ) -> TelemetryEventPayload {
+    TelemetryEventPayload(
+      ts: timestamp,
+      type: "milestone",
+      name: name,
+      value: value
+    )
+  }
+}
+
+struct TelemetryBatchResponse: Codable, Equatable, Sendable {
+  let accepted: Int
+}
+
 struct InstalledGameBundle: Equatable {
   let gameId: String
   let version: String

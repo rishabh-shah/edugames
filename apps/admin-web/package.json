@@ -3,11 +3,25 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "EduGames admin web placeholder workspace.",
+  "description": "EduGames admin web dashboard.",
   "scripts": {
-    "build": "node ../../scripts/placeholder-task.mjs @edugames/admin-web build",
-    "test": "vitest run tests/smoke.test.js",
+    "build": "next build",
+    "dev": "next dev",
+    "test": "vitest run",
     "lint": "node ../../scripts/placeholder-task.mjs @edugames/admin-web lint",
-    "typecheck": "node ../../scripts/placeholder-task.mjs @edugames/admin-web typecheck"
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@edugames/contracts": "workspace:*",
+    "next": "16.2.4",
+    "react": "19.2.5",
+    "react-dom": "19.2.5"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "jsdom": "29.0.2"
   }
 }
