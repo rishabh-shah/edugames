@@ -223,10 +223,32 @@ describe("EduGames API routes", () => {
         }
       })
     ).json();
+    const earlyPrimaryProfile = (
+      await app.inject({
+        method: "POST",
+        url: "/v1/profiles",
+        headers: {
+          authorization: `Bearer ${registration.accessToken}`
+        },
+        payload: {
+          firstName: "Noah",
+          lastName: "Shah",
+          age: 7,
+          gender: "BOY"
+        }
+      })
+    ).json();
 
     const preschoolCatalog = await app.inject({
       method: "GET",
       url: `/v1/catalog?profileId=${preschoolProfile.profile.profileId}`,
+      headers: {
+        authorization: `Bearer ${registration.accessToken}`
+      }
+    });
+    const earlyPrimaryCatalog = await app.inject({
+      method: "GET",
+      url: `/v1/catalog?profileId=${earlyPrimaryProfile.profile.profileId}`,
       headers: {
         authorization: `Bearer ${registration.accessToken}`
       }
@@ -240,7 +262,7 @@ describe("EduGames API routes", () => {
     });
     const gameDetail = await app.inject({
       method: "GET",
-      url: `/v1/games/shape-match?profileId=${preschoolProfile.profile.profileId}`,
+      url: `/v1/games/set-sizes-shapes?profileId=${preschoolProfile.profile.profileId}`,
       headers: {
         authorization: `Bearer ${registration.accessToken}`
       }
@@ -269,15 +291,27 @@ describe("EduGames API routes", () => {
     });
 
     expect(preschoolCatalog.statusCode).toBe(200);
-    expect(preschoolCatalog.json().sections[0].items).toHaveLength(1);
-    expect(preschoolCatalog.json().sections[0].items[0].slug).toBe("shape-match");
+    expect(preschoolCatalog.json().sections[0].items.map((item) => item.slug)).toEqual([
+      "shape-match",
+      "set-sizes-shapes"
+    ]);
+
+    expect(earlyPrimaryCatalog.statusCode).toBe(200);
+    expect(earlyPrimaryCatalog.json().sections[0].items.map((item) => item.slug)).toEqual([
+      "shape-match",
+      "set-sizes-shapes",
+      "triple-number-memory",
+      "game-of-sums",
+      "game-of-differences"
+    ]);
 
     expect(latePrimaryCatalog.statusCode).toBe(200);
     expect(latePrimaryCatalog.json().sections).toEqual([]);
 
     expect(gameDetail.statusCode).toBe(200);
-    expect(gameDetail.json().slug).toBe("shape-match");
-    expect(gameDetail.json().screenshots[0]).toMatch(/shape-match/);
+    expect(gameDetail.json().slug).toBe("set-sizes-shapes");
+    expect(gameDetail.json().title).toBe("Set Sizes Shapes");
+    expect(gameDetail.json().screenshots[0]).toMatch(/set-sizes-shapes/);
 
     expect(launchSession.statusCode).toBe(200);
     expect(launchSession.json().gameId).toBe("shape-match");
@@ -522,6 +556,15 @@ describe("EduGames API routes", () => {
 
     expect(catalogAfterDisable.statusCode).toBe(200);
     expect(catalogAfterDisable.json().sections).toEqual([
+      expect.objectContaining({
+        key: "featured",
+        items: [
+          expect.objectContaining({
+            gameId: "set-sizes-shapes",
+            slug: "set-sizes-shapes"
+          })
+        ]
+      }),
       expect.objectContaining({
         key: "new-and-noteworthy",
         items: [

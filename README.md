@@ -10,8 +10,14 @@ contracts, and validation tooling in one monorepo.
 - A local Fastify API with installation, profile, catalog, launch, report, and telemetry flows.
 - An iOS shell that can create child profiles, browse the catalog, launch the built-in Shape Match game, and enforce parent controls.
 - A sample game in `/Users/shrutishah/Desktop/Codebase/edugames/games/shape-match`.
+- Four additional packaged GPL-licensed math games from `jkanev/educational-html-games`:
+  `set-sizes-shapes`, `triple-number-memory`, `game-of-sums`, and `game-of-differences`.
 - Contract validation for game manifests and bundle structure.
 - Browser E2E coverage for the sample game and XCUITest coverage for the iOS shell.
+
+`set-sizes-animals` is intentionally not packaged here because that specific
+upstream file carries more restrictive licensing terms than the rest of the
+`jkanev` games.
 
 ## Repository Layout
 

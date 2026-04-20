@@ -1,0 +1,39 @@
+{
+  "package": "set-sizes-shapes",
+  "version": "0.1.0",
+  "licenses": [
+    {
+      "scope": "code",
+      "license": "GPL-3.0-or-later",
+      "paths": [
+        "index.html",
+        "styles.css",
+        "src",
+        "scripts"
+      ],
+      "notes": "Derived from set-sizes-shapes.html in jkanev/educational-html-games and adapted for EduGames packaging."
+    },
+    {
+      "scope": "art",
+      "license": "GPL-3.0-or-later",
+      "paths": [
+        "assets/icon.svg",
+        "assets/screenshots/title-screen.svg",
+        "assets/screenshots/gameplay-screen.svg"
+      ],
+      "notes": "SVG icon and screenshot placeholders created for the packaged EduGames bundle and distributed under GPL-3.0-or-later to align with the game package."
+    },
+    {
+      "scope": "audio",
+      "license": "No audio bundled",
+      "paths": [],
+      "notes": "No audio assets are bundled in this package."
+    },
+    {
+      "scope": "fonts",
+      "license": "System fonts",
+      "paths": [],
+      "notes": "The runtime uses platform fonts and does not bundle font binaries."
+    }
+  ]
+}

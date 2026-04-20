@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "gameId": "game-of-sums",
+  "slug": "game-of-sums",
+  "title": "Game of Sums",
+  "summary": "Build number pairs that add up to the target and clear the board.",
+  "description": "Game of Sums adapts Jacob Kanev's arithmetic card game for the EduGames platform. In solo play, children pick number cards that combine to the target value and practice mental addition with small, approachable number ranges.",
+  "version": "0.1.0",
+  "runtime": "html5",
+  "entrypoint": "index.html",
+  "orientation": "landscape",
+  "defaultLocale": "en-US",
+  "supportedLocales": [
+    "en-US"
+  ],
+  "minAgeBand": "EARLY_PRIMARY_6_8",
+  "maxAgeBand": "EARLY_PRIMARY_6_8",
+  "categories": [
+    "math",
+    "addition",
+    "strategy"
+  ],
+  "offlineReady": true,
+  "compressedSizeBytes": 16384,
+  "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "iconPath": "assets/icon.svg",
+  "screenshotPaths": [
+    "assets/screenshots/title-screen.svg",
+    "assets/screenshots/gameplay-screen.svg"
+  ],
+  "contentFlags": {
+    "externalLinks": false,
+    "ugc": false,
+    "chat": false,
+    "ads": false,
+    "purchases": false
+  },
+  "telemetry": {
+    "allowedEvents": [
+      "game_started",
+      "ui_interacted",
+      "game_exited"
+    ]
+  },
+  "capabilities": [
+    "events"
+  ],
+  "assetLicenseDeclaration": {
+    "code": "GPL-3.0-or-later",
+    "art": "GPL-3.0-or-later",
+    "audio": "No audio bundled",
+    "fonts": "System fonts"
+  }
+}

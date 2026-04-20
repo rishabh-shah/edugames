@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "gameId": "set-sizes-shapes",
+  "slug": "set-sizes-shapes",
+  "title": "Set Sizes Shapes",
+  "summary": "Spot how many shapes are on screen before the timer runs out.",
+  "description": "Set Sizes Shapes adapts Jacob Kanev's quick number-sense activity for the EduGames platform. Players estimate how many moving shapes appear on screen and tap the matching number button, building fast visual quantity recognition in short rounds.",
+  "version": "0.1.0",
+  "runtime": "html5",
+  "entrypoint": "index.html",
+  "orientation": "landscape",
+  "defaultLocale": "en-US",
+  "supportedLocales": [
+    "en-US"
+  ],
+  "minAgeBand": "PRESCHOOL_3_5",
+  "maxAgeBand": "EARLY_PRIMARY_6_8",
+  "categories": [
+    "counting",
+    "number-sense",
+    "visual-recognition"
+  ],
+  "offlineReady": true,
+  "compressedSizeBytes": 16384,
+  "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "iconPath": "assets/icon.svg",
+  "screenshotPaths": [
+    "assets/screenshots/title-screen.svg",
+    "assets/screenshots/gameplay-screen.svg"
+  ],
+  "contentFlags": {
+    "externalLinks": false,
+    "ugc": false,
+    "chat": false,
+    "ads": false,
+    "purchases": false
+  },
+  "telemetry": {
+    "allowedEvents": [
+      "game_started",
+      "ui_interacted",
+      "game_exited"
+    ]
+  },
+  "capabilities": [
+    "events"
+  ],
+  "assetLicenseDeclaration": {
+    "code": "GPL-3.0-or-later",
+    "art": "GPL-3.0-or-later",
+    "audio": "No audio bundled",
+    "fonts": "System fonts"
+  }
+}

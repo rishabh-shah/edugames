@@ -1,0 +1,13 @@
+{
+  "name": "@edugames/set-sizes-shapes",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Set Sizes Shapes packaged as a static EduGames HTML5 bundle.",
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "test": "vitest run --config vitest.config.ts --configLoader runner",
+    "lint": "node ./scripts/lint.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

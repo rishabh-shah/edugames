@@ -114,25 +114,77 @@ export type TelemetryBatchRecord = {
   events: TelemetryEvent[];
 };
 
-const shapeMatchFixtureArchiveStem = "shape-match-fixture";
-const shapeMatchFixtureExpandedDirectoryName = "shape-match-fixture-bundle";
-const shapeMatchDistDirectory = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "../../../../games/shape-match/dist"
-);
+type LocalBundleFixtureConfig = {
+  gameId: string;
+  archiveStem: string;
+  expandedDirectoryName: string;
+  distDirectory: string;
+};
 
-const buildFixtureArchiveManifest = (sourceDirectory: string): Buffer => {
+const createLocalBundleFixtureConfig = (
+  gameId: string,
+  archiveStem: string,
+  expandedDirectoryName: string,
+  relativeDistDirectory: string
+): LocalBundleFixtureConfig => ({
+  gameId,
+  archiveStem,
+  expandedDirectoryName,
+  distDirectory: join(
+    dirname(fileURLToPath(import.meta.url)),
+    relativeDistDirectory
+  )
+});
+
+const localBundleFixtures: LocalBundleFixtureConfig[] = [
+  createLocalBundleFixtureConfig(
+    "shape-match",
+    "shape-match-fixture",
+    "shape-match-fixture-bundle",
+    "../../../../games/shape-match/dist"
+  ),
+  createLocalBundleFixtureConfig(
+    "set-sizes-shapes",
+    "set-sizes-shapes-fixture",
+    "set-sizes-shapes-fixture-bundle",
+    "../../../../games/set-sizes-shapes/dist"
+  ),
+  createLocalBundleFixtureConfig(
+    "triple-number-memory",
+    "triple-number-memory-fixture",
+    "triple-number-memory-fixture-bundle",
+    "../../../../games/triple-number-memory/dist"
+  ),
+  createLocalBundleFixtureConfig(
+    "game-of-sums",
+    "game-of-sums-fixture",
+    "game-of-sums-fixture-bundle",
+    "../../../../games/game-of-sums/dist"
+  ),
+  createLocalBundleFixtureConfig(
+    "game-of-differences",
+    "game-of-differences-fixture",
+    "game-of-differences-fixture-bundle",
+    "../../../../games/game-of-differences/dist"
+  )
+];
+
+const buildFixtureArchiveManifest = (
+  sourceDirectory: string,
+  archiveStem: string,
+  expandedDirectoryName: string
+): Buffer => {
   const files = listRegularFiles(sourceDirectory);
   const manifestLines = files.map((filePath) => {
     const relativePath = relative(sourceDirectory, filePath).replaceAll("\\", "/");
     const fileData = readFileSync(filePath);
     const checksum = createHash("sha256").update(fileData).digest("hex");
 
-    return `file=${shapeMatchFixtureExpandedDirectoryName}/${relativePath} sha256=${checksum} bytes=${fileData.length}`;
+    return `file=${expandedDirectoryName}/${relativePath} sha256=${checksum} bytes=${fileData.length}`;
   });
 
   return Buffer.from(
-    [`archive=${shapeMatchFixtureArchiveStem}`, ...manifestLines].join("\n"),
+    [`archive=${archiveStem}`, ...manifestLines].join("\n"),
     "utf8"
   );
 };
@@ -157,15 +209,21 @@ const listRegularFiles = (directory: string): string[] => {
   return filePaths.sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
 };
 
-const resolveShapeMatchBundleMetadata = (): Pick<
+const resolveLocalBundleMetadata = (
+  fixture: LocalBundleFixtureConfig
+): Pick<
   PublishedGameRecord,
   "sha256" | "compressedSizeBytes"
 > | null => {
-  if (!existsSync(shapeMatchDistDirectory) || !statSync(shapeMatchDistDirectory).isDirectory()) {
+  if (!existsSync(fixture.distDirectory) || !statSync(fixture.distDirectory).isDirectory()) {
     return null;
   }
 
-  const archiveData = buildFixtureArchiveManifest(shapeMatchDistDirectory);
+  const archiveData = buildFixtureArchiveManifest(
+    fixture.distDirectory,
+    fixture.archiveStem,
+    fixture.expandedDirectoryName
+  );
 
   return {
     sha256: createHash("sha256").update(archiveData).digest("hex"),
@@ -182,7 +240,7 @@ const defaultPublishedGames = (): PublishedGameRecord[] => [
     summary: "Match circles, squares, and triangles.",
     description: "A simple recognition game for preschoolers.",
     minAgeBand: "PRESCHOOL_3_5",
-    maxAgeBand: "PRESCHOOL_3_5",
+    maxAgeBand: "EARLY_PRIMARY_6_8",
     iconUrl: "https://cdn.example/games/shape-match/1.0.0/assets/icon.png",
     screenshots: [
       "https://cdn.example/games/shape-match/1.0.0/assets/ss-1.png"
@@ -197,7 +255,7 @@ const defaultPublishedGames = (): PublishedGameRecord[] => [
       purchases: false
     },
     bundleUrl: "https://cdn.example/games/shape-match/1.0.0/bundle.zip",
-    ...(resolveShapeMatchBundleMetadata() ?? {
+    ...(resolveLocalBundleMetadata(localBundleFixtures[0]!) ?? {
       sha256: "7e57f3f260e6567cbbbaab355ff1c415d8f03a7e1d1abee75d7e98c502a85c4e",
       compressedSizeBytes: 1626
     }),
@@ -207,6 +265,162 @@ const defaultPublishedGames = (): PublishedGameRecord[] => [
     sectionKey: "featured",
     sectionTitle: "Featured",
     rank: 1,
+    status: "live",
+    disabledAt: null,
+    disabledReason: null,
+    updatedAt: "2026-04-19T18:00:00.000Z"
+  },
+  {
+    gameId: "set-sizes-shapes",
+    slug: "set-sizes-shapes",
+    version: "0.1.0",
+    title: "Set Sizes Shapes",
+    summary: "Spot how many shapes are on screen before the timer runs out.",
+    description:
+      "A fast number-sense game where players estimate moving shape groups at a glance.",
+    minAgeBand: "PRESCHOOL_3_5",
+    maxAgeBand: "EARLY_PRIMARY_6_8",
+    iconUrl: "https://cdn.example/games/set-sizes-shapes/0.1.0/assets/icon.svg",
+    screenshots: [
+      "https://cdn.example/games/set-sizes-shapes/0.1.0/assets/ss-1.svg"
+    ],
+    categories: ["counting", "number-sense", "visual-recognition"],
+    offlineReady: true,
+    contentFlags: {
+      externalLinks: false,
+      ugc: false,
+      chat: false,
+      ads: false,
+      purchases: false
+    },
+    bundleUrl: "https://cdn.example/games/set-sizes-shapes/0.1.0/bundle.zip",
+    ...(resolveLocalBundleMetadata(localBundleFixtures[1]!) ?? {
+      sha256: "d".repeat(64),
+      compressedSizeBytes: 2048
+    }),
+    entrypoint: "index.html",
+    allowedEvents: ["game_started", "ui_interacted", "game_exited"],
+    cohort: "general",
+    sectionKey: "featured",
+    sectionTitle: "Featured",
+    rank: 2,
+    status: "live",
+    disabledAt: null,
+    disabledReason: null,
+    updatedAt: "2026-04-19T18:00:00.000Z"
+  },
+  {
+    gameId: "triple-number-memory",
+    slug: "triple-number-memory",
+    version: "0.1.0",
+    title: "Triple Number Memory",
+    summary: "Match numbers across digits, dots, and words in a memory challenge.",
+    description:
+      "A memory game that helps children connect numerals, dot groups, and number words.",
+    minAgeBand: "EARLY_PRIMARY_6_8",
+    maxAgeBand: "EARLY_PRIMARY_6_8",
+    iconUrl: "https://cdn.example/games/triple-number-memory/0.1.0/assets/icon.svg",
+    screenshots: [
+      "https://cdn.example/games/triple-number-memory/0.1.0/assets/ss-1.svg"
+    ],
+    categories: ["memory", "numbers", "reading"],
+    offlineReady: true,
+    contentFlags: {
+      externalLinks: false,
+      ugc: false,
+      chat: false,
+      ads: false,
+      purchases: false
+    },
+    bundleUrl: "https://cdn.example/games/triple-number-memory/0.1.0/bundle.zip",
+    ...(resolveLocalBundleMetadata(localBundleFixtures[2]!) ?? {
+      sha256: "e".repeat(64),
+      compressedSizeBytes: 2048
+    }),
+    entrypoint: "index.html",
+    allowedEvents: ["game_started", "ui_interacted", "game_exited"],
+    cohort: "general",
+    sectionKey: "featured",
+    sectionTitle: "Featured",
+    rank: 3,
+    status: "live",
+    disabledAt: null,
+    disabledReason: null,
+    updatedAt: "2026-04-19T18:00:00.000Z"
+  },
+  {
+    gameId: "game-of-sums",
+    slug: "game-of-sums",
+    version: "0.1.0",
+    title: "Game of Sums",
+    summary: "Build number pairs that add up to the target and clear the board.",
+    description:
+      "A solo-friendly arithmetic challenge focused on addition facts and target matching.",
+    minAgeBand: "EARLY_PRIMARY_6_8",
+    maxAgeBand: "EARLY_PRIMARY_6_8",
+    iconUrl: "https://cdn.example/games/game-of-sums/0.1.0/assets/icon.svg",
+    screenshots: [
+      "https://cdn.example/games/game-of-sums/0.1.0/assets/ss-1.svg"
+    ],
+    categories: ["math", "addition", "strategy"],
+    offlineReady: true,
+    contentFlags: {
+      externalLinks: false,
+      ugc: false,
+      chat: false,
+      ads: false,
+      purchases: false
+    },
+    bundleUrl: "https://cdn.example/games/game-of-sums/0.1.0/bundle.zip",
+    ...(resolveLocalBundleMetadata(localBundleFixtures[3]!) ?? {
+      sha256: "f".repeat(64),
+      compressedSizeBytes: 2048
+    }),
+    entrypoint: "index.html",
+    allowedEvents: ["game_started", "ui_interacted", "game_exited"],
+    cohort: "general",
+    sectionKey: "featured",
+    sectionTitle: "Featured",
+    rank: 4,
+    status: "live",
+    disabledAt: null,
+    disabledReason: null,
+    updatedAt: "2026-04-19T18:00:00.000Z"
+  },
+  {
+    gameId: "game-of-differences",
+    slug: "game-of-differences",
+    version: "0.1.0",
+    title: "Game of Differences",
+    summary: "Choose number pairs whose difference matches the target card.",
+    description:
+      "A subtraction-focused strategy game that rewards flexible number thinking in solo play.",
+    minAgeBand: "EARLY_PRIMARY_6_8",
+    maxAgeBand: "EARLY_PRIMARY_6_8",
+    iconUrl: "https://cdn.example/games/game-of-differences/0.1.0/assets/icon.svg",
+    screenshots: [
+      "https://cdn.example/games/game-of-differences/0.1.0/assets/ss-1.svg"
+    ],
+    categories: ["math", "subtraction", "strategy"],
+    offlineReady: true,
+    contentFlags: {
+      externalLinks: false,
+      ugc: false,
+      chat: false,
+      ads: false,
+      purchases: false
+    },
+    bundleUrl: "https://cdn.example/games/game-of-differences/0.1.0/bundle.zip",
+    ...(resolveLocalBundleMetadata(localBundleFixtures[4]!) ?? {
+      sha256: "1".repeat(64),
+      compressedSizeBytes: 2048
+    }),
+    entrypoint: "index.html",
+    allowedEvents: ["game_started", "ui_interacted", "game_exited"],
+    cohort: "general",
+    sectionKey: "featured",
+    sectionTitle: "Featured",
+    rank: 5,
     status: "live",
     disabledAt: null,
     disabledReason: null,
@@ -432,28 +646,30 @@ export class InMemoryPlatformRepository {
   }
 
   private refreshLocalBundleMetadataIfNeeded(): void {
-    const current = this.publishedGames.get("shape-match");
+    for (const fixture of localBundleFixtures) {
+      const current = this.publishedGames.get(fixture.gameId);
 
-    if (!current) {
-      return;
+      if (!current) {
+        continue;
+      }
+
+      const liveMetadata = resolveLocalBundleMetadata(fixture);
+
+      if (!liveMetadata) {
+        continue;
+      }
+
+      if (
+        current.sha256 === liveMetadata.sha256 &&
+        current.compressedSizeBytes === liveMetadata.compressedSizeBytes
+      ) {
+        continue;
+      }
+
+      this.publishedGames.set(fixture.gameId, {
+        ...current,
+        ...liveMetadata
+      });
     }
-
-    const liveMetadata = resolveShapeMatchBundleMetadata();
-
-    if (!liveMetadata) {
-      return;
-    }
-
-    if (
-      current.sha256 === liveMetadata.sha256 &&
-      current.compressedSizeBytes === liveMetadata.compressedSizeBytes
-    ) {
-      return;
-    }
-
-    this.publishedGames.set("shape-match", {
-      ...current,
-      ...liveMetadata
-    });
   }
 }

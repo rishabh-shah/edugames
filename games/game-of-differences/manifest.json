@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "gameId": "game-of-differences",
+  "slug": "game-of-differences",
+  "title": "Game of Differences",
+  "summary": "Choose number pairs whose difference matches the target card.",
+  "description": "Game of Differences adapts Jacob Kanev's subtraction card game for the EduGames platform. In solo play, children find two numbers whose difference equals the target value, reinforcing subtraction facts and flexible mental math.",
+  "version": "0.1.0",
+  "runtime": "html5",
+  "entrypoint": "index.html",
+  "orientation": "landscape",
+  "defaultLocale": "en-US",
+  "supportedLocales": [
+    "en-US"
+  ],
+  "minAgeBand": "EARLY_PRIMARY_6_8",
+  "maxAgeBand": "EARLY_PRIMARY_6_8",
+  "categories": [
+    "math",
+    "subtraction",
+    "strategy"
+  ],
+  "offlineReady": true,
+  "compressedSizeBytes": 16384,
+  "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "iconPath": "assets/icon.svg",
+  "screenshotPaths": [
+    "assets/screenshots/title-screen.svg",
+    "assets/screenshots/gameplay-screen.svg"
+  ],
+  "contentFlags": {
+    "externalLinks": false,
+    "ugc": false,
+    "chat": false,
+    "ads": false,
+    "purchases": false
+  },
+  "telemetry": {
+    "allowedEvents": [
+      "game_started",
+      "ui_interacted",
+      "game_exited"
+    ]
+  },
+  "capabilities": [
+    "events"
+  ],
+  "assetLicenseDeclaration": {
+    "code": "GPL-3.0-or-later",
+    "art": "GPL-3.0-or-later",
+    "audio": "No audio bundled",
+    "fonts": "System fonts"
+  }
+}

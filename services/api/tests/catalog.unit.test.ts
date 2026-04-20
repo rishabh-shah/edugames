@@ -31,16 +31,37 @@ describe("CatalogService", () => {
       createdAt: "2026-04-19T18:00:00.000Z",
       lastActiveAt: "2026-04-19T18:00:00.000Z"
     });
+    repository.saveProfile({
+      id: "prof_earlyprimary01",
+      installationId: "inst_shared01",
+      firstName: "Noah",
+      lastName: "Shah",
+      age: 7,
+      gender: "BOY",
+      ageBand: "EARLY_PRIMARY_6_8",
+      avatarId: "otter-green",
+      createdAt: "2026-04-19T18:00:00.000Z",
+      lastActiveAt: "2026-04-19T18:00:00.000Z"
+    });
 
     const service = new CatalogService(repository, {
       now: () => new Date("2026-04-19T18:00:00.000Z")
     });
 
     const preschoolCatalog = service.list("inst_shared01", "prof_preschool01");
+    const earlyPrimaryCatalog = service.list("inst_shared01", "prof_earlyprimary01");
     const latePrimaryCatalog = service.list("inst_shared01", "prof_lateprimary01");
 
     expect(preschoolCatalog.sections[0]?.items.map((item) => item.slug)).toEqual([
-      "shape-match"
+      "shape-match",
+      "set-sizes-shapes"
+    ]);
+    expect(earlyPrimaryCatalog.sections[0]?.items.map((item) => item.slug)).toEqual([
+      "shape-match",
+      "set-sizes-shapes",
+      "triple-number-memory",
+      "game-of-sums",
+      "game-of-differences"
     ]);
     expect(latePrimaryCatalog.sections).toEqual([]);
   });
@@ -96,7 +117,17 @@ describe("CatalogService", () => {
       now: () => new Date("2026-04-19T18:06:00.000Z")
     });
 
-    expect(service.list("inst_shared01", "prof_preschool01").sections).toEqual([]);
+    expect(service.list("inst_shared01", "prof_preschool01").sections).toEqual([
+      expect.objectContaining({
+        key: "featured",
+        items: [
+          expect.objectContaining({
+            gameId: "set-sizes-shapes",
+            slug: "set-sizes-shapes"
+          })
+        ]
+      })
+    ]);
     expect(() =>
       service.getGameDetail("inst_shared01", "prof_preschool01", "shape-match")
     ).toThrow(/game not found/i);
