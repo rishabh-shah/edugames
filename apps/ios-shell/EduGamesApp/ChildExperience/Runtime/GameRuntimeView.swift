@@ -205,6 +205,45 @@ private struct GameRuntimeWebView: UIViewRepresentable {
     static let bridgeMessageHandlerName = "edugamesBridge"
     static let injectedBridgeScript = """
     (() => {
+      const postDebugLog = (message, details = null) => {
+        try {
+          window.webkit.messageHandlers.edugames.postMessage({
+            type: "debug-log",
+            gameId: "shape-match",
+            message,
+            details
+          });
+        } catch {
+          // Ignore debug bridge failures.
+        }
+      };
+
+      window.addEventListener("error", (event) => {
+        postDebugLog("window error", {
+          message: event.message,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno
+        });
+      });
+
+      window.addEventListener("unhandledrejection", (event) => {
+        const reason = event.reason;
+        postDebugLog("unhandled rejection", {
+          reason: typeof reason === "string" ? reason : String(reason)
+        });
+      });
+
+      const originalConsoleError = console.error.bind(console);
+      console.error = (...args) => {
+        postDebugLog("console.error", {
+          args: args.map((value) =>
+            typeof value === "string" ? value : String(value)
+          )
+        });
+        originalConsoleError(...args);
+      };
+
       if (window.eduGamesBridge) {
         return;
       }
@@ -326,6 +365,23 @@ private struct GameRuntimeWebView: UIViewRepresentable {
             onTelemetryEvent(name, value)
           }
         }
+      case "debug-log":
+        let message = payload["message"] as? String ?? "unknown"
+        let detailsDescription: String
+        if let details = payload["details"] {
+          if JSONSerialization.isValidJSONObject(details),
+             let data = try? JSONSerialization.data(withJSONObject: details),
+             let json = String(data: data, encoding: .utf8) {
+            detailsDescription = json
+          } else {
+            detailsDescription = String(describing: details)
+          }
+        } else {
+          detailsDescription = "null"
+        }
+        Self.logger.info(
+          "received runtime debug-log message=\(message, privacy: .public) details=\(detailsDescription, privacy: .public)"
+        )
       case "save-state":
         if let state = payload["state"] {
           try? persistState(state)
@@ -414,6 +470,28 @@ private struct GameRuntimeWebView: UIViewRepresentable {
       Self.logger.info(
         "webView didFinish url=\(webView.url?.absoluteString ?? "nil", privacy: .public)"
       )
+      webView.evaluateJavaScript(
+        """
+        JSON.stringify({
+          href: window.location.href,
+          readyState: document.readyState,
+          hasStartButton: !!document.getElementById("start-button"),
+          hasShapeMatchApp: !!window.__shapeMatchApp,
+          hasBridge: !!window.eduGamesBridge,
+          mainScriptTag: !!document.querySelector('script[src="./src/main.js"]')
+        })
+        """
+      ) { result, error in
+        if let error {
+          Self.logger.error(
+            "runtime sanity check failed error=\(String(describing: error), privacy: .public)"
+          )
+          return
+        }
+
+        let payload = (result as? String) ?? "nil"
+        Self.logger.info("runtime sanity check payload=\(payload, privacy: .public)")
+      }
       Task { @MainActor in
         onRuntimeReady()
       }

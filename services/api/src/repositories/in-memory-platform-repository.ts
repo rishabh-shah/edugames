@@ -1,3 +1,7 @@
+import { createHash } from "node:crypto";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import type {
   AgeBand,
   Cohort,
@@ -110,6 +114,65 @@ export type TelemetryBatchRecord = {
   events: TelemetryEvent[];
 };
 
+const shapeMatchFixtureArchiveStem = "shape-match-fixture";
+const shapeMatchFixtureExpandedDirectoryName = "shape-match-fixture-bundle";
+const shapeMatchDistDirectory = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../../../games/shape-match/dist"
+);
+
+const buildFixtureArchiveManifest = (sourceDirectory: string): Buffer => {
+  const files = listRegularFiles(sourceDirectory);
+  const manifestLines = files.map((filePath) => {
+    const relativePath = relative(sourceDirectory, filePath).replaceAll("\\", "/");
+    const fileData = readFileSync(filePath);
+    const checksum = createHash("sha256").update(fileData).digest("hex");
+
+    return `file=${shapeMatchFixtureExpandedDirectoryName}/${relativePath} sha256=${checksum} bytes=${fileData.length}`;
+  });
+
+  return Buffer.from(
+    [`archive=${shapeMatchFixtureArchiveStem}`, ...manifestLines].join("\n"),
+    "utf8"
+  );
+};
+
+const listRegularFiles = (directory: string): string[] => {
+  const entries = readdirSync(directory, { withFileTypes: true });
+  const filePaths: string[] = [];
+
+  for (const entry of entries) {
+    const entryPath = join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      filePaths.push(...listRegularFiles(entryPath));
+      continue;
+    }
+
+    if (entry.isFile()) {
+      filePaths.push(entryPath);
+    }
+  }
+
+  return filePaths.sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
+};
+
+const resolveShapeMatchBundleMetadata = (): Pick<
+  PublishedGameRecord,
+  "sha256" | "compressedSizeBytes"
+> | null => {
+  if (!existsSync(shapeMatchDistDirectory) || !statSync(shapeMatchDistDirectory).isDirectory()) {
+    return null;
+  }
+
+  const archiveData = buildFixtureArchiveManifest(shapeMatchDistDirectory);
+
+  return {
+    sha256: createHash("sha256").update(archiveData).digest("hex"),
+    compressedSizeBytes: archiveData.length
+  };
+};
+
 const defaultPublishedGames = (): PublishedGameRecord[] => [
   {
     gameId: "shape-match",
@@ -134,8 +197,10 @@ const defaultPublishedGames = (): PublishedGameRecord[] => [
       purchases: false
     },
     bundleUrl: "https://cdn.example/games/shape-match/1.0.0/bundle.zip",
-    sha256: "7e57f3f260e6567cbbbaab355ff1c415d8f03a7e1d1abee75d7e98c502a85c4e",
-    compressedSizeBytes: 1626,
+    ...(resolveShapeMatchBundleMetadata() ?? {
+      sha256: "7e57f3f260e6567cbbbaab355ff1c415d8f03a7e1d1abee75d7e98c502a85c4e",
+      compressedSizeBytes: 1626
+    }),
     entrypoint: "index.html",
     allowedEvents: ["milestone:first-match", "milestone:round-complete"],
     cohort: "general",
@@ -261,6 +326,7 @@ export class InMemoryPlatformRepository {
   }
 
   listPublishedGamesForCohort(cohort: Cohort): PublishedGameRecord[] {
+    this.refreshLocalBundleMetadataIfNeeded();
     return [...this.publishedGames.values()]
       .filter((game) => game.status === "live" && game.cohort === cohort)
       .sort((left, right) => left.rank - right.rank);
@@ -281,10 +347,12 @@ export class InMemoryPlatformRepository {
   }
 
   listPublishedGames(): PublishedGameRecord[] {
+    this.refreshLocalBundleMetadataIfNeeded();
     return [...this.publishedGames.values()].sort((left, right) => left.rank - right.rank);
   }
 
   getPublishedGameRecord(gameId: string): PublishedGameRecord | undefined {
+    this.refreshLocalBundleMetadataIfNeeded();
     return this.publishedGames.get(gameId);
   }
 
@@ -361,5 +429,31 @@ export class InMemoryPlatformRepository {
     return [...this.telemetryBatches.values()].sort((left, right) =>
       left.receivedAt.localeCompare(right.receivedAt)
     );
+  }
+
+  private refreshLocalBundleMetadataIfNeeded(): void {
+    const current = this.publishedGames.get("shape-match");
+
+    if (!current) {
+      return;
+    }
+
+    const liveMetadata = resolveShapeMatchBundleMetadata();
+
+    if (!liveMetadata) {
+      return;
+    }
+
+    if (
+      current.sha256 === liveMetadata.sha256 &&
+      current.compressedSizeBytes === liveMetadata.compressedSizeBytes
+    ) {
+      return;
+    }
+
+    this.publishedGames.set("shape-match", {
+      ...current,
+      ...liveMetadata
+    });
   }
 }

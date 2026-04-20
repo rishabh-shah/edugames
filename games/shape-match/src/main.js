@@ -163,6 +163,19 @@ export const createShapeMatchApp = ({
   const statusNode = documentObject.getElementById("status-text") ?? createPassiveNode();
   const context = canvas.getContext("2d");
 
+  const postDebugLog = (message, details = {}) => {
+    try {
+      windowObject.webkit?.messageHandlers?.edugames?.postMessage({
+        type: "debug-log",
+        gameId: GAME_ID,
+        message,
+        details
+      });
+    } catch {
+      // Ignore logging failures so runtime behavior stays unchanged.
+    }
+  };
+
   let state = createInitialGameState();
   let lastLayout = createLayout(canvas, state);
 
@@ -377,9 +390,19 @@ export const createShapeMatchApp = ({
   };
 
   const start = () => {
-    applyState(startGame(state));
-    sdk.emitEvent("game_started", 1);
-    persistProgress();
+    postDebugLog("start button clicked", { mode: state.mode });
+
+    try {
+      applyState(startGame(state));
+      postDebugLog("start applied state", { mode: state.mode });
+      sdk.emitEvent("game_started", 1);
+      persistProgress();
+    } catch (error) {
+      postDebugLog("start failed", {
+        message: error instanceof Error ? error.message : String(error)
+      });
+      throw error;
+    }
   };
 
   const restart = () => {
@@ -397,33 +420,50 @@ export const createShapeMatchApp = ({
   };
 
   const init = async () => {
-    const savedProgress = await sdk.loadState();
-    state = createInitialGameState({
-      savedProgress
-    });
+    postDebugLog("init started");
 
-    sdk.ready({
-      version: GAME_VERSION,
-      inputModes: ["touch", "mouse"],
-      offlineReady: true
-    });
+    try {
+      const savedProgress = await sdk.loadState();
+      postDebugLog("loadState resolved", {
+        hasSavedProgress: savedProgress !== null
+      });
+      state = createInitialGameState({
+        savedProgress
+      });
 
-    canvas.addEventListener("click", (event) => {
-      handleCanvasClick(event.clientX, event.clientY);
-    });
-    startButton.addEventListener("click", start);
-    restartButton.addEventListener("click", restart);
-    exitButton.addEventListener("click", requestExit);
-    windowObject.addEventListener("keydown", handleKeydown);
+      sdk.ready({
+        version: GAME_VERSION,
+        inputModes: ["touch", "mouse"],
+        offlineReady: true
+      });
 
-    windowObject.render_game_to_text = () =>
-      JSON.stringify(createTextSnapshot(state));
-    windowObject.advanceTime = (elapsedMs) => {
-      advanceTime(elapsedMs);
-    };
-    windowObject.__shapeMatchApp = api;
+      canvas.addEventListener("click", (event) => {
+        postDebugLog("canvas clicked", {
+          clientX: event.clientX,
+          clientY: event.clientY
+        });
+        handleCanvasClick(event.clientX, event.clientY);
+      });
+      startButton.addEventListener("click", start);
+      restartButton.addEventListener("click", restart);
+      exitButton.addEventListener("click", requestExit);
+      windowObject.addEventListener("keydown", handleKeydown);
 
-    render();
+      windowObject.render_game_to_text = () =>
+        JSON.stringify(createTextSnapshot(state));
+      windowObject.advanceTime = (elapsedMs) => {
+        advanceTime(elapsedMs);
+      };
+      windowObject.__shapeMatchApp = api;
+
+      render();
+      postDebugLog("init finished", { mode: state.mode });
+    } catch (error) {
+      postDebugLog("init failed", {
+        message: error instanceof Error ? error.message : String(error)
+      });
+      throw error;
+    }
   };
 
   const api = {
