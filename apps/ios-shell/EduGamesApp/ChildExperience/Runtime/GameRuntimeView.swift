@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import WebKit
+import OSLog
 
 struct GameRuntimeView: View {
   @Bindable var model: AppModel
@@ -167,6 +168,9 @@ private struct GameRuntimeWebView: UIViewRepresentable {
     webView.accessibilityIdentifier = "game-runtime-webview"
 
     let entrypointURL = launchDetails.installedBundle.entrypointURL
+    Coordinator.logger.info(
+      "makeUIView loading entrypoint=\(entrypointURL.path, privacy: .public) readAccess=\(launchDetails.installedBundle.installDirectoryURL.path, privacy: .public)"
+    )
     webView.loadFileURL(
       entrypointURL,
       allowingReadAccessTo: launchDetails.installedBundle.installDirectoryURL
@@ -177,6 +181,9 @@ private struct GameRuntimeWebView: UIViewRepresentable {
   func updateUIView(_ webView: WKWebView, context: Context) {
     context.coordinator.launchDetails = launchDetails
     context.coordinator.profileId = profileId
+    Coordinator.logger.info(
+      "updateUIView launchSessionID=\(launchDetails.launchSession.launchSessionId, privacy: .public) url=\(webView.url?.absoluteString ?? "nil", privacy: .public)"
+    )
   }
 
   static func dismantleUIView(_ webView: WKWebView, coordinator: Coordinator) {
@@ -189,6 +196,11 @@ private struct GameRuntimeWebView: UIViewRepresentable {
   }
 
   final class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
+    static let logger = Logger(
+      subsystem: "com.edugames.ios-shell",
+      category: "GameRuntimeWebView"
+    )
+
     static let runtimeMessageHandlerName = "edugames"
     static let bridgeMessageHandlerName = "edugamesBridge"
     static let injectedBridgeScript = """
@@ -291,16 +303,25 @@ private struct GameRuntimeWebView: UIViewRepresentable {
 
       switch type {
       case "ready":
+        Self.logger.info(
+          "received runtime ready message gameID=\(self.launchDetails.launchSession.gameId, privacy: .public)"
+        )
         Task { @MainActor in
           onRuntimeReady()
         }
       case "request-exit":
+        Self.logger.info(
+          "received runtime exit request gameID=\(self.launchDetails.launchSession.gameId, privacy: .public)"
+        )
         Task { @MainActor in
           onRequestExit()
         }
       case "event":
         if let name = payload["name"] as? String {
           let value = payload["value"] as? Int ?? 1
+          Self.logger.info(
+            "received runtime event name=\(name, privacy: .public) value=\(value)"
+          )
           Task { @MainActor in
             onTelemetryEvent(name, value)
           }
@@ -390,9 +411,32 @@ private struct GameRuntimeWebView: UIViewRepresentable {
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+      Self.logger.info(
+        "webView didFinish url=\(webView.url?.absoluteString ?? "nil", privacy: .public)"
+      )
       Task { @MainActor in
         onRuntimeReady()
       }
+    }
+
+    func webView(
+      _ webView: WKWebView,
+      didFail navigation: WKNavigation!,
+      withError error: Error
+    ) {
+      Self.logger.error(
+        "webView didFail url=\(webView.url?.absoluteString ?? "nil", privacy: .public) error=\(String(describing: error), privacy: .public)"
+      )
+    }
+
+    func webView(
+      _ webView: WKWebView,
+      didFailProvisionalNavigation navigation: WKNavigation!,
+      withError error: Error
+    ) {
+      Self.logger.error(
+        "webView didFailProvisionalNavigation url=\(webView.url?.absoluteString ?? "nil", privacy: .public) error=\(String(describing: error), privacy: .public)"
+      )
     }
   }
 }

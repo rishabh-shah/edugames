@@ -192,8 +192,8 @@ final class PlatformAPIClientTests: XCTestCase {
       "version": "1.0.0",
       "bundle": {
         "bundleUrl": "https://cdn.example/games/shape-match/1.0.0/bundle.zip",
-        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "compressedSizeBytes": 4812031
+        "sha256": "7e57f3f260e6567cbbbaab355ff1c415d8f03a7e1d1abee75d7e98c502a85c4e",
+        "compressedSizeBytes": 1626
       },
       "manifest": {
         "entrypoint": "index.html",
@@ -228,7 +228,10 @@ final class PlatformAPIClientTests: XCTestCase {
     let payload = try JSONDecoder().decode(CreateLaunchSessionPayload.self, from: body)
 
     XCTAssertEqual(launch.launchSessionId, "ls_123abc")
-    XCTAssertEqual(launch.bundle.sha256, String(repeating: "a", count: 64))
+    XCTAssertEqual(
+      launch.bundle.sha256,
+      "7e57f3f260e6567cbbbaab355ff1c415d8f03a7e1d1abee75d7e98c502a85c4e"
+    )
     XCTAssertEqual(request.url?.path, "/v1/launch-sessions")
     XCTAssertEqual(request.httpMethod, "POST")
     XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer \(session.accessToken)")

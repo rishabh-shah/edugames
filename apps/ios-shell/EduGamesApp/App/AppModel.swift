@@ -273,23 +273,47 @@ final class AppModel {
       return
     }
 
+    Self.logger.info(
+      "launchSelectedGame started profileID=\(selectedProfile.id, privacy: .public) gameID=\(selectedGame.gameId, privacy: .public)"
+    )
     bootstrapErrorMessage = nil
     activeLaunchDetails = nil
     route = .runtime
+    Self.logger.info(
+      "launchSelectedGame route set to runtime gameID=\(selectedGame.gameId, privacy: .public)"
+    )
 
     do {
       let session = try await bootstrapService.currentSession()
+      Self.logger.info(
+        "launchSelectedGame resolved session installationID=\(session.installationId, privacy: .public)"
+      )
       activeLaunchDetails = try await runtimeLaunchService.prepareLaunch(
         session: session,
         request: GameLaunchRequest(profile: selectedProfile, game: selectedGame)
       )
+      if let activeLaunchDetails {
+        Self.logger.info(
+          "launchSelectedGame prepared launchSessionID=\(activeLaunchDetails.launchSession.launchSessionId, privacy: .public) entrypoint=\(activeLaunchDetails.installedBundle.entrypointURL.path, privacy: .public)"
+        )
+      } else {
+        Self.logger.error(
+          "launchSelectedGame completed without activeLaunchDetails gameID=\(selectedGame.gameId, privacy: .public)"
+        )
+      }
       gameDetailRequestID = nil
       beginTelemetrySession(
         profileId: selectedProfile.id,
         launchSessionId: activeLaunchDetails?.launchSession.launchSessionId
       )
       startPlayTimeTracking(for: selectedProfile)
+      Self.logger.info(
+        "launchSelectedGame finished successfully gameID=\(selectedGame.gameId, privacy: .public)"
+      )
     } catch {
+      Self.logger.error(
+        "launchSelectedGame failed gameID=\(selectedGame.gameId, privacy: .public) error=\(String(describing: error), privacy: .public)"
+      )
       if await handleAuthRecoveryIfNeeded(for: error) {
         return
       }
@@ -666,9 +690,13 @@ final class AppModel {
         return false
       }
     } catch {
+      Self.logger.error(
+        "handleAuthRecoveryIfNeeded failed to recover error=\(String(describing: error), privacy: .public)"
+      )
       return false
     }
 
+    Self.logger.info("handleAuthRecoveryIfNeeded reset local shell state after auth failure")
     flushActiveTelemetry(includeSessionEnd: false)
     stopPlayTimeTicker(clearSession: true)
     profiles = []

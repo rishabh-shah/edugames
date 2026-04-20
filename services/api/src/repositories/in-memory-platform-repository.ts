@@ -134,8 +134,8 @@ const defaultPublishedGames = (): PublishedGameRecord[] => [
       purchases: false
     },
     bundleUrl: "https://cdn.example/games/shape-match/1.0.0/bundle.zip",
-    sha256: "a".repeat(64),
-    compressedSizeBytes: 4812031,
+    sha256: "7e57f3f260e6567cbbbaab355ff1c415d8f03a7e1d1abee75d7e98c502a85c4e",
+    compressedSizeBytes: 1626,
     entrypoint: "index.html",
     allowedEvents: ["milestone:first-match", "milestone:round-complete"],
     cohort: "general",

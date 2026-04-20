@@ -15,6 +15,9 @@ DerivedData/
 *.xcuserdatad/
 *.xcuserstate
 
+# Framework build output
+**/.next/
+
 # Local environment files
 .env
 .env.*
