@@ -10,6 +10,10 @@ describe("LaunchSessionsService", () => {
     repository.saveProfile({
       id: "prof_preschool01",
       installationId: "inst_owner01",
+      firstName: "Ava",
+      lastName: "Shah",
+      age: 5,
+      gender: "GIRL",
       ageBand: "PRESCHOOL_3_5",
       avatarId: "fox-red",
       createdAt: "2026-04-19T18:00:00.000Z",
@@ -36,6 +40,10 @@ describe("LaunchSessionsService", () => {
     repository.saveProfile({
       id: "prof_lateprimary01",
       installationId: "inst_owner01",
+      firstName: "Liam",
+      lastName: "Shah",
+      age: 10,
+      gender: "BOY",
       ageBand: "LATE_PRIMARY_9_10",
       avatarId: "owl-blue",
       createdAt: "2026-04-19T18:00:00.000Z",
@@ -60,6 +68,10 @@ describe("LaunchSessionsService", () => {
     repository.saveProfile({
       id: "prof_preschool01",
       installationId: "inst_owner01",
+      firstName: "Ava",
+      lastName: "Shah",
+      age: 5,
+      gender: "GIRL",
       ageBand: "PRESCHOOL_3_5",
       avatarId: "fox-red",
       createdAt: "2026-04-19T18:00:00.000Z",
@@ -90,6 +102,10 @@ describe("LaunchSessionsService", () => {
     repository.saveProfile({
       id: "prof_preschool01",
       installationId: "inst_owner01",
+      firstName: "Ava",
+      lastName: "Shah",
+      age: 5,
+      gender: "GIRL",
       ageBand: "PRESCHOOL_3_5",
       avatarId: "fox-red",
       createdAt: "2026-04-19T18:00:00.000Z",

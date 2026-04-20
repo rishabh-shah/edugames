@@ -198,6 +198,10 @@ struct ParentZoneAndPlayTimeTests {
       profiles: [
         ChildProfile(
           id: "prof_fixture_01",
+          firstName: "Ava",
+          lastName: "Shah",
+          age: 5,
+          gender: .girl,
           ageBand: "PRESCHOOL_3_5",
           avatarId: "balloon-bear",
           createdAt: "2026-04-19T19:10:00Z",
@@ -236,6 +240,10 @@ struct ParentZoneAndPlayTimeTests {
       profiles: [
         ChildProfile(
           id: "prof_fixture_01",
+          firstName: "Ava",
+          lastName: "Shah",
+          age: 5,
+          gender: .girl,
           ageBand: "PRESCHOOL_3_5",
           avatarId: "balloon-bear",
           createdAt: "2026-04-19T19:10:00Z",

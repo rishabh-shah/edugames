@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UIKit
 
 @MainActor
@@ -9,8 +10,10 @@ protocol PlatformAPIClient {
   ) async throws -> InstallationSession
   func createProfile(
     session: InstallationSession,
-    ageBand: String,
-    avatarId: String
+    firstName: String,
+    lastName: String,
+    age: Int,
+    gender: ChildGender
   ) async throws -> ChildProfile
   func fetchCatalog(
     session: InstallationSession,
@@ -69,15 +72,26 @@ final class FixturePlatformAPIClient: PlatformAPIClient {
 
   func createProfile(
     session: InstallationSession,
-    ageBand: String,
-    avatarId: String
+    firstName: String,
+    lastName: String,
+    age: Int,
+    gender: ChildGender
   ) async throws -> ChildProfile {
     defer { nextIndex += 1 }
 
     return ChildProfile(
       id: String(format: "prof_fixture_%02d", nextIndex),
-      ageBand: ageBand,
-      avatarId: avatarId,
+      firstName: firstName,
+      lastName: lastName,
+      age: age,
+      gender: gender,
+      ageBand: CreateChildProfileInput(
+        firstName: firstName,
+        lastName: lastName,
+        age: age,
+        gender: gender
+      ).ageBand,
+      avatarId: gender.defaultAvatarId,
       createdAt: "2026-04-19T19:10:00Z",
       lastActiveAt: "2026-04-19T19:10:00Z"
     )
@@ -131,6 +145,11 @@ final class FixturePlatformAPIClient: PlatformAPIClient {
 
 @MainActor
 final class LivePlatformAPIClient: PlatformAPIClient {
+  private static let logger = Logger(
+    subsystem: "com.edugames.ios-shell",
+    category: "PlatformAPIClient"
+  )
+
   private let urlSession: URLSession
   private let baseURL: URL
   private let registrationContextProvider: @Sendable () async -> InstallationRegistrationContext
@@ -192,15 +211,19 @@ final class LivePlatformAPIClient: PlatformAPIClient {
 
   func createProfile(
     session: InstallationSession,
-    ageBand: String,
-    avatarId: String
+    firstName: String,
+    lastName: String,
+    age: Int,
+    gender: ChildGender
   ) async throws -> ChildProfile {
     let response: CreateProfileResponse = try await send(
       path: "/v1/profiles",
       method: "POST",
       requestBody: CreateProfileRequest(
-        ageBand: ageBand,
-        avatarId: avatarId
+        firstName: firstName,
+        lastName: lastName,
+        age: age,
+        gender: gender
       ),
       accessToken: session.accessToken
     )
@@ -306,7 +329,32 @@ final class LivePlatformAPIClient: PlatformAPIClient {
 
     request.httpBody = try JSONEncoder().encode(requestBody)
 
-    let (data, response) = try await urlSession.data(for: request)
+    Self.logger.info(
+      "HTTP send method=\(method, privacy: .public) url=\(request.url?.absoluteString ?? "nil", privacy: .public) hasAuthorization=\(accessToken != nil)"
+    )
+
+    let data: Data
+    let response: URLResponse
+
+    do {
+      (data, response) = try await urlSession.data(for: request)
+    } catch {
+      Self.logger.error(
+        "HTTP transport failure method=\(method, privacy: .public) url=\(request.url?.absoluteString ?? "nil", privacy: .public) error=\(String(describing: error), privacy: .public)"
+      )
+      throw error
+    }
+
+    if let httpResponse = response as? HTTPURLResponse {
+      Self.logger.info(
+        "HTTP response method=\(method, privacy: .public) url=\(request.url?.absoluteString ?? "nil", privacy: .public) status=\(httpResponse.statusCode)"
+      )
+    } else {
+      Self.logger.error(
+        "HTTP invalid non-HTTP response method=\(method, privacy: .public) url=\(request.url?.absoluteString ?? "nil", privacy: .public)"
+      )
+    }
+
     try validate(response: response, data: data)
     return try JSONDecoder().decode(ResponseBody.self, from: data)
   }
@@ -330,7 +378,32 @@ final class LivePlatformAPIClient: PlatformAPIClient {
     request.httpMethod = "GET"
     request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
-    let (data, response) = try await urlSession.data(for: request)
+    Self.logger.info(
+      "HTTP get url=\(url.absoluteString, privacy: .public) hasAuthorization=true"
+    )
+
+    let data: Data
+    let response: URLResponse
+
+    do {
+      (data, response) = try await urlSession.data(for: request)
+    } catch {
+      Self.logger.error(
+        "HTTP transport failure method=GET url=\(url.absoluteString, privacy: .public) error=\(String(describing: error), privacy: .public)"
+      )
+      throw error
+    }
+
+    if let httpResponse = response as? HTTPURLResponse {
+      Self.logger.info(
+        "HTTP response method=GET url=\(url.absoluteString, privacy: .public) status=\(httpResponse.statusCode)"
+      )
+    } else {
+      Self.logger.error(
+        "HTTP invalid non-HTTP response method=GET url=\(url.absoluteString, privacy: .public)"
+      )
+    }
+
     try validate(response: response, data: data)
     return try JSONDecoder().decode(ResponseBody.self, from: data)
   }
@@ -353,6 +426,9 @@ final class LivePlatformAPIClient: PlatformAPIClient {
 
     guard (200...299).contains(httpResponse.statusCode) else {
       let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+      Self.logger.error(
+        "HTTP status failure status=\(httpResponse.statusCode) body=\(message, privacy: .public)"
+      )
       throw LivePlatformAPIClientError.httpStatus(httpResponse.statusCode, message)
     }
   }
@@ -388,8 +464,10 @@ private struct RefreshInstallationResponse: Decodable {
 }
 
 private struct CreateProfileRequest: Encodable {
-  let ageBand: String
-  let avatarId: String
+  let firstName: String
+  let lastName: String
+  let age: Int
+  let gender: ChildGender
 }
 
 private struct CreateProfileResponse: Decodable {
@@ -462,7 +540,7 @@ final class GameRuntimeLaunchService {
       profileId: request.profileId,
       gameId: request.gameId
     )
-    let installedBundle = try bundleInstallService.installBundle(from: launchSession)
+    let installedBundle = try await installBundle(from: launchSession)
 
     return GameLaunchDetails(
       request: request,
@@ -470,5 +548,21 @@ final class GameRuntimeLaunchService {
       launchSession: launchSession,
       installedBundle: installedBundle
     )
+  }
+
+  private func installBundle(
+    from launchSession: LaunchSessionResponse
+  ) async throws -> InstalledGameBundle {
+    let bundleInstallService = self.bundleInstallService
+
+    return try await withCheckedThrowingContinuation { continuation in
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          continuation.resume(returning: try bundleInstallService.installBundle(from: launchSession))
+        } catch {
+          continuation.resume(throwing: error)
+        }
+      }
+    }
   }
 }

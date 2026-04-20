@@ -49,13 +49,20 @@ describe("EduGames API routes", () => {
       url: "/v1/profiles",
       headers: authHeader,
       payload: {
-        ageBand: "PRESCHOOL_3_5",
-        avatarId: "fox-red"
+        firstName: "Ava",
+        lastName: "Shah",
+        age: 5,
+        gender: "GIRL"
       }
     });
 
     expect(createProfile.statusCode).toBe(201);
-    expect(createProfile.json().profileId).toMatch(/^prof_/);
+    expect(createProfile.json().profile.profileId).toMatch(/^prof_/);
+    expect(createProfile.json().profile.firstName).toBe("Ava");
+    expect(createProfile.json().profile.ageBand).toBe("PRESCHOOL_3_5");
+    expect(createProfile.json().profile.avatarId).toBe("starlight-otter");
+    expect(createProfile.json().profile.createdAt).toBeTruthy();
+    expect(createProfile.json().profile.lastActiveAt).toBeTruthy();
 
     const listProfiles = await app.inject({
       method: "GET",
@@ -91,7 +98,7 @@ describe("EduGames API routes", () => {
 
     const deleteProfile = await app.inject({
       method: "DELETE",
-      url: `/v1/profiles/${createProfile.json().profileId}`,
+      url: `/v1/profiles/${createProfile.json().profile.profileId}`,
       headers: refreshedAuthHeader
     });
 
@@ -137,8 +144,10 @@ describe("EduGames API routes", () => {
           authorization: `Bearer ${firstRegistration.accessToken}`
         },
         payload: {
-          ageBand: "PRESCHOOL_3_5",
-          avatarId: "fox-red"
+          firstName: "Ava",
+          lastName: "Shah",
+          age: 5,
+          gender: "GIRL"
         }
       })
     ).json();
@@ -156,7 +165,7 @@ describe("EduGames API routes", () => {
     });
     const crossInstallationDelete = await app.inject({
       method: "DELETE",
-      url: `/v1/profiles/${createdProfile.profileId}`,
+      url: `/v1/profiles/${createdProfile.profile.profileId}`,
       headers: {
         authorization: `Bearer ${secondRegistration.accessToken}`
       }
@@ -192,8 +201,10 @@ describe("EduGames API routes", () => {
           authorization: `Bearer ${registration.accessToken}`
         },
         payload: {
-          ageBand: "PRESCHOOL_3_5",
-          avatarId: "fox-red"
+          firstName: "Ava",
+          lastName: "Shah",
+          age: 5,
+          gender: "GIRL"
         }
       })
     ).json();
@@ -205,29 +216,31 @@ describe("EduGames API routes", () => {
           authorization: `Bearer ${registration.accessToken}`
         },
         payload: {
-          ageBand: "LATE_PRIMARY_9_10",
-          avatarId: "owl-blue"
+          firstName: "Liam",
+          lastName: "Shah",
+          age: 10,
+          gender: "BOY"
         }
       })
     ).json();
 
     const preschoolCatalog = await app.inject({
       method: "GET",
-      url: `/v1/catalog?profileId=${preschoolProfile.profileId}`,
+      url: `/v1/catalog?profileId=${preschoolProfile.profile.profileId}`,
       headers: {
         authorization: `Bearer ${registration.accessToken}`
       }
     });
     const latePrimaryCatalog = await app.inject({
       method: "GET",
-      url: `/v1/catalog?profileId=${latePrimaryProfile.profileId}`,
+      url: `/v1/catalog?profileId=${latePrimaryProfile.profile.profileId}`,
       headers: {
         authorization: `Bearer ${registration.accessToken}`
       }
     });
     const gameDetail = await app.inject({
       method: "GET",
-      url: `/v1/games/shape-match?profileId=${preschoolProfile.profileId}`,
+      url: `/v1/games/shape-match?profileId=${preschoolProfile.profile.profileId}`,
       headers: {
         authorization: `Bearer ${registration.accessToken}`
       }
@@ -239,7 +252,7 @@ describe("EduGames API routes", () => {
         authorization: `Bearer ${registration.accessToken}`
       },
       payload: {
-        profileId: preschoolProfile.profileId,
+        profileId: preschoolProfile.profile.profileId,
         gameId: "shape-match"
       }
     });
@@ -250,7 +263,7 @@ describe("EduGames API routes", () => {
         authorization: `Bearer ${registration.accessToken}`
       },
       payload: {
-        profileId: latePrimaryProfile.profileId,
+        profileId: latePrimaryProfile.profile.profileId,
         gameId: "shape-match"
       }
     });
@@ -299,8 +312,10 @@ describe("EduGames API routes", () => {
         url: "/v1/profiles",
         headers: authHeader,
         payload: {
-          ageBand: "PRESCHOOL_3_5",
-          avatarId: "fox-red"
+          firstName: "Ava",
+          lastName: "Shah",
+          age: 5,
+          gender: "GIRL"
         }
       })
     ).json();
@@ -310,7 +325,7 @@ describe("EduGames API routes", () => {
         url: "/v1/launch-sessions",
         headers: authHeader,
         payload: {
-          profileId: profile.profileId,
+          profileId: profile.profile.profileId,
           gameId: "shape-match"
         }
       })
@@ -321,7 +336,7 @@ describe("EduGames API routes", () => {
       url: "/v1/reports",
       headers: authHeader,
       payload: {
-        profileId: profile.profileId,
+        profileId: profile.profile.profileId,
         gameId: "shape-match",
         reason: "bug",
         details: "The round froze after the first match."
@@ -332,7 +347,7 @@ describe("EduGames API routes", () => {
       url: "/v1/telemetry/batches",
       headers: authHeader,
       payload: {
-        profileId: profile.profileId,
+        profileId: profile.profile.profileId,
         launchSessionId: launchSession.launchSessionId,
         schemaVersion: 1,
         events: [
@@ -392,8 +407,10 @@ describe("EduGames API routes", () => {
         url: "/v1/profiles",
         headers: authHeader,
         payload: {
-          ageBand: "PRESCHOOL_3_5",
-          avatarId: "fox-red"
+          firstName: "Ava",
+          lastName: "Shah",
+          age: 5,
+          gender: "GIRL"
         }
       })
     ).json();
@@ -402,7 +419,7 @@ describe("EduGames API routes", () => {
       url: "/v1/reports",
       headers: authHeader,
       payload: {
-        profileId: profile.profileId,
+        profileId: profile.profile.profileId,
         gameId: "shape-match",
         reason: "safety",
         details: "Disable until reviewed."
@@ -419,7 +436,7 @@ describe("EduGames API routes", () => {
       url: "/v1/launch-sessions",
       headers: authHeader,
       payload: {
-        profileId: profile.profileId,
+        profileId: profile.profile.profileId,
         gameId: "counting-kites"
       }
     });
@@ -438,12 +455,12 @@ describe("EduGames API routes", () => {
     });
     const catalogAfterDisable = await app.inject({
       method: "GET",
-      url: `/v1/catalog?profileId=${profile.profileId}`,
+      url: `/v1/catalog?profileId=${profile.profile.profileId}`,
       headers: authHeader
     });
     const detailAfterDisable = await app.inject({
       method: "GET",
-      url: `/v1/games/shape-match?profileId=${profile.profileId}`,
+      url: `/v1/games/shape-match?profileId=${profile.profile.profileId}`,
       headers: authHeader
     });
     const launchAfterDisable = await app.inject({
@@ -451,7 +468,7 @@ describe("EduGames API routes", () => {
       url: "/v1/launch-sessions",
       headers: authHeader,
       payload: {
-        profileId: profile.profileId,
+        profileId: profile.profile.profileId,
         gameId: "shape-match"
       }
     });

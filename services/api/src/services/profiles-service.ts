@@ -1,4 +1,5 @@
 import type {
+  AgeBand,
   CreateProfileRequest,
   CreateProfileResponse,
   ListProfilesResponse
@@ -24,18 +25,36 @@ export class ProfilesService {
   ): CreateProfileResponse {
     const now = this.clock.now().toISOString();
     const profileId = createPrefixedId("prof");
+    const ageBand = profileAgeToAgeBand(payload.age);
+    const avatarId = defaultAvatarIdForGender(payload.gender);
 
-    this.repository.saveProfile({
+    const profile = {
       id: profileId,
       installationId,
-      ageBand: payload.ageBand,
-      avatarId: payload.avatarId,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      age: payload.age,
+      gender: payload.gender,
+      ageBand,
+      avatarId,
       createdAt: now,
       lastActiveAt: now
-    });
+    };
+
+    this.repository.saveProfile(profile);
 
     return {
-      profileId
+      profile: {
+        profileId: profile.id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        age: profile.age,
+        gender: profile.gender,
+        ageBand: profile.ageBand,
+        avatarId: profile.avatarId,
+        createdAt: profile.createdAt,
+        lastActiveAt: profile.lastActiveAt
+      }
     };
   }
 
@@ -43,6 +62,10 @@ export class ProfilesService {
     return {
       profiles: this.repository.listProfilesForInstallation(installationId).map((profile) => ({
         profileId: profile.id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        age: profile.age,
+        gender: profile.gender,
         ageBand: profile.ageBand,
         avatarId: profile.avatarId
       }))
@@ -63,3 +86,34 @@ export class ProfilesService {
     };
   }
 }
+
+const profileAgeToAgeBand = (age: number): AgeBand => {
+  if (age <= 2) {
+    return "TODDLER_1_2";
+  }
+
+  if (age <= 5) {
+    return "PRESCHOOL_3_5";
+  }
+
+  if (age <= 8) {
+    return "EARLY_PRIMARY_6_8";
+  }
+
+  return "LATE_PRIMARY_9_10";
+};
+
+const defaultAvatarIdForGender = (
+  gender: CreateProfileRequest["gender"]
+): string => {
+  switch (gender) {
+    case "BOY":
+      return "rocket-fox";
+    case "GIRL":
+      return "starlight-otter";
+    case "NONBINARY":
+      return "comet-panda";
+    case "PREFER_NOT_TO_SAY":
+      return "balloon-bear";
+  }
+};

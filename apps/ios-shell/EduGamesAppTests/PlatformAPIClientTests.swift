@@ -52,9 +52,13 @@ final class PlatformAPIClientTests: XCTestCase {
     let responseBody = """
     {
       "profile": {
-        "id": "prof_live_01",
+        "profileId": "prof_live_01",
+        "firstName": "Ava",
+        "lastName": "Shah",
+        "age": 5,
+        "gender": "GIRL",
         "ageBand": "PRESCHOOL_3_5",
-        "avatarId": "balloon-bear",
+        "avatarId": "starlight-otter",
         "createdAt": "2026-04-19T19:10:00Z",
         "lastActiveAt": "2026-04-19T19:10:00Z"
       }
@@ -73,8 +77,10 @@ final class PlatformAPIClientTests: XCTestCase {
 
     let profile = try await client.createProfile(
       session: session,
-      ageBand: "PRESCHOOL_3_5",
-      avatarId: "balloon-bear"
+      firstName: "Ava",
+      lastName: "Shah",
+      age: 5,
+      gender: .girl
     )
 
     let request = try XCTUnwrap(recorder.lastRequest)
@@ -85,8 +91,10 @@ final class PlatformAPIClientTests: XCTestCase {
     XCTAssertEqual(request.url?.path, "/v1/profiles")
     XCTAssertEqual(request.httpMethod, "POST")
     XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer \(session.accessToken)")
-    XCTAssertEqual(payload.ageBand, "PRESCHOOL_3_5")
-    XCTAssertEqual(payload.avatarId, "balloon-bear")
+    XCTAssertEqual(payload.firstName, "Ava")
+    XCTAssertEqual(payload.lastName, "Shah")
+    XCTAssertEqual(payload.age, 5)
+    XCTAssertEqual(payload.gender, "GIRL")
   }
 
   func testFetchCatalogUsesProfileQuery() async throws {
@@ -513,8 +521,10 @@ private struct RegisterInstallationPayload: Decodable {
 }
 
 private struct CreateProfilePayload: Decodable {
-  let ageBand: String
-  let avatarId: String
+  let firstName: String
+  let lastName: String
+  let age: Int
+  let gender: String
 }
 
 private struct CreateLaunchSessionPayload: Decodable {

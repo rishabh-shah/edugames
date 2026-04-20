@@ -4,6 +4,8 @@ import {
   ageBandSchema,
   createModerationActionResponseSchema,
   createOpenApiDocument,
+  createProfileRequestSchema,
+  createProfileResponseSchema,
   createReportRequestSchema,
   listModerationGamesResponseSchema,
   listModerationReportsResponseSchema,
@@ -40,6 +42,39 @@ describe("contracts package", () => {
         supportsAppAttest: true
       })
     ).toThrow(/semver/i);
+  });
+
+  it("validates profile creation payloads with child identity fields", () => {
+    const request = createProfileRequestSchema.parse({
+      firstName: "Ava",
+      lastName: "Shah",
+      age: 5,
+      gender: "GIRL"
+    });
+    const response = createProfileResponseSchema.parse({
+      profile: {
+        profileId: "prof_123abc",
+        firstName: "Ava",
+        lastName: "Shah",
+        age: 5,
+        gender: "GIRL",
+        ageBand: "PRESCHOOL_3_5",
+        avatarId: "starlight-otter",
+        createdAt: "2026-04-19T18:00:00Z",
+        lastActiveAt: "2026-04-19T18:00:00Z"
+      }
+    });
+
+    expect(request.gender).toBe("GIRL");
+    expect(response.profile.firstName).toBe("Ava");
+    expect(() =>
+      createProfileRequestSchema.parse({
+        firstName: "Ava",
+        lastName: "Shah",
+        age: 11,
+        gender: "GIRL"
+      })
+    ).toThrow();
   });
 
   it("parses launch responses and telemetry events", () => {

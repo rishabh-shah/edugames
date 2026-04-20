@@ -69,10 +69,43 @@ export const createApp = (options: CreateAppOptions = {}) => {
   const reportsService = new ReportsService(repository, clock);
   const telemetryService = new TelemetryService(repository, clock);
   const app = Fastify({
-    logger: false
+    logger: process.env.NODE_ENV !== "test"
   });
 
-  app.setErrorHandler((error, _request, reply) => {
+  app.addHook("onRequest", async (request) => {
+    app.log.info(
+      {
+        method: request.method,
+        url: request.url,
+        headers: {
+          authorization: request.headers.authorization ? "[present]" : "[missing]"
+        }
+      },
+      "incoming request"
+    );
+  });
+
+  app.addHook("onResponse", async (request, reply) => {
+    app.log.info(
+      {
+        method: request.method,
+        url: request.url,
+        statusCode: reply.statusCode
+      },
+      "request completed"
+    );
+  });
+
+  app.setErrorHandler((error, request, reply) => {
+    app.log.error(
+      {
+        method: request.method,
+        url: request.url,
+        error
+      },
+      "request failed"
+    );
+
     if (error instanceof ZodError) {
       const firstIssue = error.issues[0];
 
@@ -131,7 +164,21 @@ export const createApp = (options: CreateAppOptions = {}) => {
       request.url.startsWith("/v1/reports") ||
       request.url.startsWith("/v1/telemetry")
     ) {
+      app.log.info(
+        {
+          url: request.url,
+          authorization: request.headers.authorization ? "[present]" : "[missing]"
+        },
+        "checking installation auth"
+      );
       requireInstallationAuth(request, repository, config, clock.now());
+      app.log.info(
+        {
+          url: request.url,
+          installationId: request.installationAuth?.installationId
+        },
+        "installation auth accepted"
+      );
     }
 
     if (request.url.startsWith("/v1/admin")) {

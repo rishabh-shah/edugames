@@ -58,6 +58,14 @@ struct GameDetailView: View {
             .controlSize(.large)
         }
 
+        if let errorMessage = model.bootstrapErrorMessage {
+          Text(errorMessage)
+            .foregroundStyle(.red)
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 20))
+        }
+
         Button {
           Task {
             await model.launchSelectedGame()

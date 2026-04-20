@@ -29,6 +29,10 @@ struct AppModelTests {
       profiles: [
         ChildProfile(
           id: "prof_fixture_01",
+          firstName: "Ava",
+          lastName: "Shah",
+          age: 5,
+          gender: .girl,
           ageBand: "PRESCHOOL_3_5",
           avatarId: "balloon-bear",
           createdAt: "2026-04-19T19:10:00Z",
@@ -64,7 +68,7 @@ struct AppModelTests {
     await model.bootstrap()
     model.bootstrapErrorMessage = "Old error"
 
-    await model.createProfile(.presets[0])
+    await model.createProfile(.sample)
 
     #expect(model.bootstrapErrorMessage == nil)
     #expect(model.profiles.count == 1)
@@ -260,6 +264,27 @@ struct AppModelTests {
     #expect(model.activeLaunchDetails?.launchSession.gameId == "shape-match")
   }
 
+  @Test("launching resets to profiles when the local API session becomes invalid mid-flow")
+  func launchAuthFailureReturnsToProfilesAndClearsStaleState() async throws {
+    let model = try makeModel(
+      bootstrapAPIClient: FixturePlatformAPIClient(),
+      runtimeAPIClient: AuthFailingLaunchPlatformAPIClient()
+    )
+
+    await model.bootstrap()
+    await model.selectProfile(model.profiles[0])
+    await model.selectGame(model.catalog?.sections[0].items[0] ?? CatalogResponse.sample.sections[0].items[0])
+    await model.launchSelectedGame()
+
+    #expect(model.route == .profiles)
+    #expect(model.profiles.isEmpty)
+    #expect(model.selectedProfile == nil)
+    #expect(model.selectedGame == nil)
+    #expect(model.gameDetail == nil)
+    #expect(model.activeLaunchDetails == nil)
+    #expect(model.bootstrapErrorMessage == "The local API restarted, so saved profiles were reset. Create a new profile to continue.")
+  }
+
   private func makeLaunchReadyModel() throws -> AppModel {
     try makeModel(
       bootstrapAPIClient: FixturePlatformAPIClient(),
@@ -284,6 +309,10 @@ struct AppModelTests {
       profiles: [
         ChildProfile(
           id: "prof_fixture_01",
+          firstName: "Ava",
+          lastName: "Shah",
+          age: 5,
+          gender: .girl,
           ageBand: "PRESCHOOL_3_5",
           avatarId: "balloon-bear",
           createdAt: "2026-04-19T19:10:00Z",
@@ -333,13 +362,19 @@ private final class DelayedDetailPlatformAPIClient: PlatformAPIClient {
 
   func createProfile(
     session: InstallationSession,
-    ageBand: String,
-    avatarId: String
+    firstName: String,
+    lastName: String,
+    age: Int,
+    gender: ChildGender
   ) async throws -> ChildProfile {
     ChildProfile(
       id: "prof_fixture_01",
-      ageBand: ageBand,
-      avatarId: avatarId,
+      firstName: firstName,
+      lastName: lastName,
+      age: age,
+      gender: gender,
+      ageBand: CreateChildProfileInput(firstName: firstName, lastName: lastName, age: age, gender: gender).ageBand,
+      avatarId: gender.defaultAvatarId,
       createdAt: "2026-04-19T19:10:00Z",
       lastActiveAt: "2026-04-19T19:10:00Z"
     )
@@ -441,13 +476,19 @@ private final class DelayedLaunchPlatformAPIClient: PlatformAPIClient {
 
   func createProfile(
     session: InstallationSession,
-    ageBand: String,
-    avatarId: String
+    firstName: String,
+    lastName: String,
+    age: Int,
+    gender: ChildGender
   ) async throws -> ChildProfile {
     ChildProfile(
       id: "prof_fixture_01",
-      ageBand: ageBand,
-      avatarId: avatarId,
+      firstName: firstName,
+      lastName: lastName,
+      age: age,
+      gender: gender,
+      ageBand: CreateChildProfileInput(firstName: firstName, lastName: lastName, age: age, gender: gender).ageBand,
+      avatarId: gender.defaultAvatarId,
       createdAt: "2026-04-19T19:10:00Z",
       lastActiveAt: "2026-04-19T19:10:00Z"
     )
@@ -543,13 +584,19 @@ private final class RecordingPlatformAPIClient: PlatformAPIClient {
 
   func createProfile(
     session: InstallationSession,
-    ageBand: String,
-    avatarId: String
+    firstName: String,
+    lastName: String,
+    age: Int,
+    gender: ChildGender
   ) async throws -> ChildProfile {
     ChildProfile(
       id: "prof_fixture_01",
-      ageBand: ageBand,
-      avatarId: avatarId,
+      firstName: firstName,
+      lastName: lastName,
+      age: age,
+      gender: gender,
+      ageBand: CreateChildProfileInput(firstName: firstName, lastName: lastName, age: age, gender: gender).ageBand,
+      avatarId: gender.defaultAvatarId,
       createdAt: "2026-04-19T19:10:00Z",
       lastActiveAt: "2026-04-19T19:10:00Z"
     )
@@ -621,6 +668,85 @@ private final class RecordingPlatformAPIClient: PlatformAPIClient {
     while telemetryBatches.count < count {
       await Task.yield()
     }
+  }
+}
+
+@MainActor
+private final class AuthFailingLaunchPlatformAPIClient: PlatformAPIClient {
+  func registerInstallation() async throws -> InstallationSession {
+    InstallationSession(
+      installationId: "inst_fixture_ios",
+      accessToken: "access_fixture_token_1234567890abcdefghijklmnop",
+      refreshToken: "refresh_fixture_token_1234567890abcdefghijklmnop"
+    )
+  }
+
+  func refreshInstallation(
+    session: InstallationSession
+  ) async throws -> InstallationSession {
+    session
+  }
+
+  func createProfile(
+    session: InstallationSession,
+    firstName: String,
+    lastName: String,
+    age: Int,
+    gender: ChildGender
+  ) async throws -> ChildProfile {
+    ChildProfile(
+      id: "prof_fixture_01",
+      firstName: firstName,
+      lastName: lastName,
+      age: age,
+      gender: gender,
+      ageBand: CreateChildProfileInput(firstName: firstName, lastName: lastName, age: age, gender: gender).ageBand,
+      avatarId: gender.defaultAvatarId,
+      createdAt: "2026-04-19T19:10:00Z",
+      lastActiveAt: "2026-04-19T19:10:00Z"
+    )
+  }
+
+  func fetchCatalog(
+    session: InstallationSession,
+    profileId: String
+  ) async throws -> CatalogResponse {
+    CatalogResponse.sample
+  }
+
+  func fetchGameDetail(
+    session: InstallationSession,
+    profileId: String,
+    slug: String
+  ) async throws -> GameDetailResponse {
+    throw LivePlatformAPIClientError.httpStatus(403, "Installation is not active.")
+  }
+
+  func createLaunchSession(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String
+  ) async throws -> LaunchSessionResponse {
+    LaunchSessionResponse.fixture
+  }
+
+  func submitReport(
+    session: InstallationSession,
+    profileId: String,
+    gameId: String,
+    reason: ReportReason,
+    details: String?
+  ) async throws -> ReportSubmissionResponse {
+    ReportSubmissionResponse(reportId: "rep_fixture_123abc", status: "open")
+  }
+
+  func ingestTelemetryBatch(
+    session: InstallationSession,
+    profileId: String,
+    launchSessionId: String,
+    events: [TelemetryEventPayload]
+  ) async throws -> TelemetryBatchResponse {
+    TelemetryBatchResponse(accepted: events.count)
   }
 }
 

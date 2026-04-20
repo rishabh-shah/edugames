@@ -288,6 +288,7 @@ final class FileSessionStore: SessionStore {
 
 final class AppDatabase {
   private let handle: OpaquePointer
+  private let usesWriteAheadLogging: Bool
 
   init(path: String) throws {
     try FileManager.default.createDirectory(
@@ -295,11 +296,15 @@ final class AppDatabase {
       withIntermediateDirectories: true
     )
     handle = try Self.openDatabase(path: path)
+    usesWriteAheadLogging = true
+    try configurePragmas()
     try migrate()
   }
 
   init() throws {
     handle = try Self.openDatabase(path: ":memory:")
+    usesWriteAheadLogging = false
+    try configurePragmas()
     try migrate()
   }
 
@@ -331,7 +336,7 @@ final class AppDatabase {
   func fetchProfiles() throws -> [ChildProfile] {
     let statement = try prepareStatement(
       sql: """
-      SELECT id, ageBand, avatarId, createdAt, lastActiveAt
+      SELECT id, firstName, lastName, age, gender, ageBand, avatarId, createdAt, lastActiveAt
       FROM profiles
       ORDER BY createdAt ASC
       """
@@ -344,10 +349,14 @@ final class AppDatabase {
       profiles.append(
         ChildProfile(
           id: String(cString: sqlite3_column_text(statement, 0)),
-          ageBand: String(cString: sqlite3_column_text(statement, 1)),
-          avatarId: String(cString: sqlite3_column_text(statement, 2)),
-          createdAt: String(cString: sqlite3_column_text(statement, 3)),
-          lastActiveAt: String(cString: sqlite3_column_text(statement, 4))
+          firstName: String(cString: sqlite3_column_text(statement, 1)),
+          lastName: String(cString: sqlite3_column_text(statement, 2)),
+          age: Int(sqlite3_column_int64(statement, 3)),
+          gender: ChildGender(rawValue: String(cString: sqlite3_column_text(statement, 4))) ?? .preferNotToSay,
+          ageBand: String(cString: sqlite3_column_text(statement, 5)),
+          avatarId: String(cString: sqlite3_column_text(statement, 6)),
+          createdAt: String(cString: sqlite3_column_text(statement, 7)),
+          lastActiveAt: String(cString: sqlite3_column_text(statement, 8))
         )
       )
     }
@@ -364,9 +373,13 @@ final class AppDatabase {
   func saveProfile(_ profile: ChildProfile) throws {
     let statement = try prepareStatement(
       sql: """
-      INSERT INTO profiles (id, ageBand, avatarId, createdAt, lastActiveAt)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO profiles (id, firstName, lastName, age, gender, ageBand, avatarId, createdAt, lastActiveAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
+        firstName = excluded.firstName,
+        lastName = excluded.lastName,
+        age = excluded.age,
+        gender = excluded.gender,
         ageBand = excluded.ageBand,
         avatarId = excluded.avatarId,
         createdAt = excluded.createdAt,
@@ -376,10 +389,14 @@ final class AppDatabase {
     defer { sqlite3_finalize(statement) }
 
     try bind(profile.id, at: 1, in: statement)
-    try bind(profile.ageBand, at: 2, in: statement)
-    try bind(profile.avatarId, at: 3, in: statement)
-    try bind(profile.createdAt, at: 4, in: statement)
-    try bind(profile.lastActiveAt, at: 5, in: statement)
+    try bind(profile.firstName, at: 2, in: statement)
+    try bind(profile.lastName, at: 3, in: statement)
+    try bind(Int64(profile.age), at: 4, in: statement)
+    try bind(profile.gender.rawValue, at: 5, in: statement)
+    try bind(profile.ageBand, at: 6, in: statement)
+    try bind(profile.avatarId, at: 7, in: statement)
+    try bind(profile.createdAt, at: 8, in: statement)
+    try bind(profile.lastActiveAt, at: 9, in: statement)
 
     guard sqlite3_step(statement) == SQLITE_DONE else {
       throw SQLiteProfileRepositoryError.stepFailed(message: lastErrorMessage())
@@ -599,12 +616,36 @@ final class AppDatabase {
       sql: """
       CREATE TABLE IF NOT EXISTS profiles (
         id TEXT PRIMARY KEY NOT NULL,
+        firstName TEXT NOT NULL DEFAULT '',
+        lastName TEXT NOT NULL DEFAULT '',
+        age INTEGER NOT NULL DEFAULT 5,
+        gender TEXT NOT NULL DEFAULT 'PREFER_NOT_TO_SAY',
         ageBand TEXT NOT NULL,
         avatarId TEXT NOT NULL,
         createdAt TEXT NOT NULL,
         lastActiveAt TEXT NOT NULL
       )
       """
+    )
+    try addColumnIfNeeded(
+      table: "profiles",
+      column: "firstName",
+      definition: "TEXT NOT NULL DEFAULT ''"
+    )
+    try addColumnIfNeeded(
+      table: "profiles",
+      column: "lastName",
+      definition: "TEXT NOT NULL DEFAULT ''"
+    )
+    try addColumnIfNeeded(
+      table: "profiles",
+      column: "age",
+      definition: "INTEGER NOT NULL DEFAULT 5"
+    )
+    try addColumnIfNeeded(
+      table: "profiles",
+      column: "gender",
+      definition: "TEXT NOT NULL DEFAULT 'PREFER_NOT_TO_SAY'"
     )
     try execute(
       sql: """
@@ -652,6 +693,51 @@ final class AppDatabase {
       sqlite3_free(errorMessage)
       throw SQLiteProfileRepositoryError.executionFailed(message: message)
     }
+  }
+
+  func journalMode() throws -> String {
+    let statement = try prepareStatement(sql: "PRAGMA journal_mode;")
+    defer { sqlite3_finalize(statement) }
+
+    guard sqlite3_step(statement) == SQLITE_ROW else {
+      throw SQLiteProfileRepositoryError.stepFailed(message: lastErrorMessage())
+    }
+
+    return String(cString: sqlite3_column_text(statement, 0)).uppercased()
+  }
+
+  private func configurePragmas() throws {
+    if usesWriteAheadLogging {
+      try execute(sql: "PRAGMA journal_mode=WAL;")
+      try execute(sql: "PRAGMA synchronous=NORMAL;")
+    }
+  }
+
+  private func addColumnIfNeeded(
+    table: String,
+    column: String,
+    definition: String
+  ) throws {
+    let statement = try prepareStatement(sql: "PRAGMA table_info(\(table));")
+    defer { sqlite3_finalize(statement) }
+
+    var existingColumns: Set<String> = []
+
+    while sqlite3_step(statement) == SQLITE_ROW {
+      existingColumns.insert(String(cString: sqlite3_column_text(statement, 1)))
+    }
+
+    let result = sqlite3_errcode(handle)
+
+    guard result == SQLITE_DONE else {
+      throw SQLiteProfileRepositoryError.stepFailed(message: lastErrorMessage())
+    }
+
+    guard existingColumns.contains(column) == false else {
+      return
+    }
+
+    try execute(sql: "ALTER TABLE \(table) ADD COLUMN \(column) \(definition)")
   }
 
   private func prepareStatement(sql: String) throws -> OpaquePointer {
@@ -853,34 +939,15 @@ final class BundleInstallService {
   }
 
   func installBundle(from launchSession: LaunchSessionResponse) throws -> InstalledGameBundle {
-    guard launchSession.bundle.bundleURL.scheme == "fixture" else {
-      throw BundleInstallError.unsupportedSource(launchSession.bundle.bundleURL)
-    }
-
-    let resourceStem = launchSession.bundle.bundleURL
-      .deletingPathExtension()
-      .lastPathComponent
-    guard !resourceStem.isEmpty else {
-      throw BundleInstallError.fixtureResourceMissing(launchSession.bundle.bundleURL.absoluteString)
-    }
-
-    guard
-      let archiveSourceURL = FixtureBundleResourceLocator.resourceURL(
-        named: resourceStem,
-        withExtension: "zip"
-      )
-    else {
-      throw BundleInstallError.fixtureResourceMissing("\(resourceStem).zip")
-    }
-
-    guard
-      let expandedSourceURL = FixtureBundleResourceLocator.resourceURL(
-        named: "\(resourceStem)-bundle",
-        withExtension: nil
-      )
-    else {
-      throw BundleInstallError.fixtureResourceMissing("\(resourceStem)-bundle")
-    }
+    let resourceStem = try resolveFixtureResourceStem(for: launchSession)
+    let archiveSourceURL = try requireFixtureResourceURL(
+      named: resourceStem,
+      withExtension: "zip"
+    )
+    let expandedSourceURL = try requireFixtureResourceURL(
+      named: "\(resourceStem)-bundle",
+      withExtension: nil
+    )
 
     try checksumVerifier.verifyArchive(
       at: archiveSourceURL,
@@ -934,6 +1001,51 @@ final class BundleInstallService {
       installDirectoryURL: bundleDirectoryURL,
       entrypointURL: entrypointURL
     )
+  }
+
+  private func resolveFixtureResourceStem(
+    for launchSession: LaunchSessionResponse
+  ) throws -> String {
+    let bundleURL = launchSession.bundle.bundleURL
+
+    if bundleURL.scheme == "fixture" {
+      let resourceStem = bundleURL
+        .deletingPathExtension()
+        .lastPathComponent
+
+      guard !resourceStem.isEmpty else {
+        throw BundleInstallError.fixtureResourceMissing(bundleURL.absoluteString)
+      }
+
+      return resourceStem
+    }
+
+    // Local shell API responses currently use CDN-style URLs even though the iOS shell
+    // installs vendored fixture bundles for offline development.
+    let fallbackStem = "\(launchSession.gameId)-fixture"
+    guard FixtureBundleResourceLocator.resourceURL(named: fallbackStem, withExtension: "zip") != nil else {
+      throw BundleInstallError.unsupportedSource(bundleURL)
+    }
+
+    return fallbackStem
+  }
+
+  private func requireFixtureResourceURL(
+    named name: String,
+    withExtension fileExtension: String?
+  ) throws -> URL {
+    guard let resourceURL = FixtureBundleResourceLocator.resourceURL(
+      named: name,
+      withExtension: fileExtension
+    ) else {
+      if let fileExtension {
+        throw BundleInstallError.fixtureResourceMissing("\(name).\(fileExtension)")
+      }
+
+      throw BundleInstallError.fixtureResourceMissing(name)
+    }
+
+    return resourceURL
   }
 
   private static func defaultInstallRootURL(fileManager: FileManager) -> URL {

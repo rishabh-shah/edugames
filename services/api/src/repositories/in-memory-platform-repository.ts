@@ -31,6 +31,10 @@ export type InstallationSessionRecord = {
 export type ProfileRecord = {
   id: string;
   installationId: string;
+  firstName: string;
+  lastName: string;
+  age: number;
+  gender: "BOY" | "GIRL" | "NONBINARY" | "PREFER_NOT_TO_SAY";
   ageBand: AgeBand;
   avatarId: string;
   createdAt: string;

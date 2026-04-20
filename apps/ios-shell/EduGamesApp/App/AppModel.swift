@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import OSLog
 
 enum ShellRoute: Equatable {
   case bootstrap
@@ -13,6 +14,11 @@ enum ShellRoute: Equatable {
 @MainActor
 @Observable
 final class AppModel {
+  private static let logger = Logger(
+    subsystem: "com.edugames.ios-shell",
+    category: "AppModel"
+  )
+
   var route: ShellRoute = .bootstrap
   var isBootstrapping = false
   var bootstrapErrorMessage: String?
@@ -22,7 +28,8 @@ final class AppModel {
   var selectedGame: CatalogGame?
   var gameDetail: GameDetailResponse?
   var activeLaunchDetails: GameLaunchDetails?
-  var activeCreationOptionID: String?
+  var isCreateProfileFormPresented = false
+  var isCreatingProfile = false
   var parentGateChallenge: ParentGateChallenge?
   var parentGateErrorMessage: String?
   var isParentGatePresented = false
@@ -166,7 +173,7 @@ final class AppModel {
       catalog = nil
       gameDetail = nil
       activeLaunchDetails = nil
-      loadPlayTimeSettingsCache()
+      await loadPlayTimeSettingsCache()
       if snapshot.didResetLocalProfiles {
         bootstrapErrorMessage = "The local API restarted, so saved profiles were reset. Create a new profile to continue."
       }
@@ -176,19 +183,29 @@ final class AppModel {
     }
   }
 
-  func createProfile(_ option: ProfileCreationOption) async {
-    activeCreationOptionID = option.id
+  func createProfile(_ input: CreateChildProfileInput) async {
+    Self.logger.info(
+      "createProfile started firstName=\(input.normalizedFirstName, privacy: .public) age=\(input.age)"
+    )
+    isCreatingProfile = true
 
     defer {
-      activeCreationOptionID = nil
+      isCreatingProfile = false
     }
 
     do {
-      profiles = try await bootstrapService.createProfile(option)
-      loadPlayTimeSettingsCache()
+      profiles = try await bootstrapService.createProfile(input)
+      Self.logger.info(
+        "createProfile succeeded firstName=\(input.normalizedFirstName, privacy: .public) profileCount=\(self.profiles.count)"
+      )
+      await loadPlayTimeSettingsCache()
       bootstrapErrorMessage = nil
+      isCreateProfileFormPresented = false
       route = .profiles
     } catch {
+      Self.logger.error(
+        "createProfile failed firstName=\(input.normalizedFirstName, privacy: .public) error=\(String(describing: error), privacy: .public)"
+      )
       bootstrapErrorMessage = "Could not create a profile right now."
     }
   }
@@ -205,6 +222,10 @@ final class AppModel {
       catalog = try await bootstrapService.fetchCatalog(for: profile)
       route = .catalog
     } catch {
+      if await handleAuthRecoveryIfNeeded(for: error) {
+        return
+      }
+
       bootstrapErrorMessage = "Could not load the catalog right now."
     }
   }
@@ -234,6 +255,10 @@ final class AppModel {
       gameDetail = detail
       route = .gameDetail
     } catch {
+      if await handleAuthRecoveryIfNeeded(for: error) {
+        return
+      }
+
       guard gameDetailRequestID == requestID else {
         return
       }
@@ -253,7 +278,7 @@ final class AppModel {
     route = .runtime
 
     do {
-      let session = try bootstrapService.currentSession()
+      let session = try await bootstrapService.currentSession()
       activeLaunchDetails = try await runtimeLaunchService.prepareLaunch(
         session: session,
         request: GameLaunchRequest(profile: selectedProfile, game: selectedGame)
@@ -265,6 +290,10 @@ final class AppModel {
       )
       startPlayTimeTracking(for: selectedProfile)
     } catch {
+      if await handleAuthRecoveryIfNeeded(for: error) {
+        return
+      }
+
       route = .gameDetail
       bootstrapErrorMessage = "Could not start this game right now."
     }
@@ -311,12 +340,16 @@ final class AppModel {
   func setPlayTimeLimit(_ limit: PlayTimeLimit, for profile: ChildProfile) {
     let settings = ParentPlayTimeSettings(profileId: profile.id, playTimeLimit: limit)
 
-    do {
-      try playTimeSettingsRepository.saveSettings(settings)
-      playTimeSettingsByProfileID[profile.id] = settings
-      bootstrapErrorMessage = nil
-    } catch {
-      bootstrapErrorMessage = "Could not save the new play time setting."
+    playTimeSettingsByProfileID[profile.id] = settings
+
+    Task {
+      do {
+        try await savePlayTimeSettings(settings)
+        bootstrapErrorMessage = nil
+      } catch {
+        playTimeSettingsByProfileID[profile.id] = nil
+        bootstrapErrorMessage = "Could not save the new play time setting."
+      }
     }
   }
 
@@ -431,6 +464,11 @@ final class AppModel {
       dismissReportIssue()
       bootstrapErrorMessage = nil
     } catch {
+      if await handleAuthRecoveryIfNeeded(for: error) {
+        dismissReportIssue()
+        return
+      }
+
       reportSubmissionErrorMessage = "Could not send the report right now."
     }
   }
@@ -557,16 +595,45 @@ final class AppModel {
     }
   }
 
-  private func loadPlayTimeSettingsCache() {
+  private func loadPlayTimeSettingsCache() async {
     var loadedSettings: [String: ParentPlayTimeSettings] = [:]
 
     for profile in profiles {
-      if let settings = try? playTimeSettingsRepository.loadSettings(profileId: profile.id) {
+      if let settings = try? await loadPlayTimeSettings(profileId: profile.id) {
         loadedSettings[profile.id] = settings
       }
     }
 
     playTimeSettingsByProfileID = loadedSettings
+  }
+
+  private func loadPlayTimeSettings(profileId: String) async throws -> ParentPlayTimeSettings? {
+    let repository = playTimeSettingsRepository
+
+    return try await withCheckedThrowingContinuation { continuation in
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          continuation.resume(returning: try repository.loadSettings(profileId: profileId))
+        } catch {
+          continuation.resume(throwing: error)
+        }
+      }
+    }
+  }
+
+  private func savePlayTimeSettings(_ settings: ParentPlayTimeSettings) async throws {
+    let repository = playTimeSettingsRepository
+
+    try await withCheckedThrowingContinuation { continuation in
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          try repository.saveSettings(settings)
+          continuation.resume(returning: ())
+        } catch {
+          continuation.resume(throwing: error)
+        }
+      }
+    }
   }
 
   private static func playTimeTimingConfiguration(
@@ -591,6 +658,31 @@ final class AppModel {
     activeLaunchDetails = nil
     route = .catalog
     bootstrapErrorMessage = message
+  }
+
+  private func handleAuthRecoveryIfNeeded(for error: Error) async -> Bool {
+    do {
+      guard try await bootstrapService.recoverFromAuthFailureIfNeeded(from: error) else {
+        return false
+      }
+    } catch {
+      return false
+    }
+
+    flushActiveTelemetry(includeSessionEnd: false)
+    stopPlayTimeTicker(clearSession: true)
+    profiles = []
+    selectedProfile = nil
+    catalog = nil
+    selectedGame = nil
+    gameDetail = nil
+    activeLaunchDetails = nil
+    gameDetailRequestID = nil
+    reportIssueContext = nil
+    reportSubmissionErrorMessage = nil
+    route = .profiles
+    bootstrapErrorMessage = "The local API restarted, so saved profiles were reset. Create a new profile to continue."
+    return true
   }
 
   private func flushActiveTelemetry(includeSessionEnd: Bool) {

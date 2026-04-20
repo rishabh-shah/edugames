@@ -33,7 +33,7 @@ struct BootstrapServiceTests {
     )
 
     _ = try await service.bootstrap()
-    let profiles = try await service.createProfile(.presets[0])
+    let profiles = try await service.createProfile(.sample)
 
     #expect(profiles.count == 1)
     #expect(profiles[0].ageBand == "PRESCHOOL_3_5")
@@ -58,6 +58,10 @@ struct BootstrapServiceTests {
       profiles: [
         ChildProfile(
           id: "prof_fixture_01",
+          firstName: "Ava",
+          lastName: "Shah",
+          age: 5,
+          gender: .girl,
           ageBand: "PRESCHOOL_3_5",
           avatarId: "balloon-bear",
           createdAt: "2026-04-19T19:10:00Z",
@@ -102,6 +106,10 @@ struct BootstrapServiceTests {
       profiles: [
         ChildProfile(
           id: "prof_fixture_01",
+          firstName: "Ava",
+          lastName: "Shah",
+          age: 5,
+          gender: .girl,
           ageBand: "PRESCHOOL_3_5",
           avatarId: "balloon-bear",
           createdAt: "2026-04-19T19:10:00Z",
@@ -148,6 +156,10 @@ struct BootstrapServiceTests {
       profiles: [
         ChildProfile(
           id: "prof_fixture_legacy",
+          firstName: "Legacy",
+          lastName: "Profile",
+          age: 5,
+          gender: .preferNotToSay,
           ageBand: "PRESCHOOL_3_5",
           avatarId: "balloon-bear",
           createdAt: "2026-04-19T19:10:00Z",
@@ -165,7 +177,7 @@ struct BootstrapServiceTests {
       profileRepository: profileRepository
     )
 
-    let profiles = try await service.createProfile(.presets[0])
+    let profiles = try await service.createProfile(.sample)
 
     #expect(apiClient.registerCallCount == 1)
     #expect(apiClient.refreshCallCount == 0)
@@ -214,8 +226,10 @@ private final class SessionRecoveryPlatformAPIClient: PlatformAPIClient {
 
   func createProfile(
     session: InstallationSession,
-    ageBand: String,
-    avatarId: String
+    firstName: String,
+    lastName: String,
+    age: Int,
+    gender: ChildGender
   ) async throws -> ChildProfile {
     if let createProfileError, hasThrownCreateProfileError == false {
       hasThrownCreateProfileError = true
@@ -224,8 +238,12 @@ private final class SessionRecoveryPlatformAPIClient: PlatformAPIClient {
 
     return ChildProfile(
       id: "prof_fixture_recovered",
-      ageBand: ageBand,
-      avatarId: avatarId,
+      firstName: firstName,
+      lastName: lastName,
+      age: age,
+      gender: gender,
+      ageBand: CreateChildProfileInput(firstName: firstName, lastName: lastName, age: age, gender: gender).ageBand,
+      avatarId: gender.defaultAvatarId,
       createdAt: "2026-04-19T19:10:00Z",
       lastActiveAt: "2026-04-19T19:10:00Z"
     )

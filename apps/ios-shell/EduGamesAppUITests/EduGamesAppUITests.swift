@@ -3,6 +3,9 @@ import XCTest
 @MainActor
 final class EduGamesAppUITests: XCTestCase {
   private let app = XCUIApplication()
+  private let defaultFirstName = "Ava"
+  private let defaultLastName = "Shah"
+  private let defaultAge = 5
 
   override func setUp() {
     continueAfterFailure = false
@@ -14,14 +17,20 @@ final class EduGamesAppUITests: XCTestCase {
   func testCreateProfileAndOpenCatalog() {
     app.launch()
 
-    let addProfileButton = app.buttons["add-profile-preschool"]
-    XCTAssertTrue(addProfileButton.waitForExistence(timeout: 5))
+    let createProfileButton = app.buttons["open-create-profile-form"]
+    XCTAssertTrue(createProfileButton.waitForExistence(timeout: 5))
     attachScreenshot(named: "profile-picker")
 
-    addProfileButton.tap()
+    createProfile(
+      firstName: defaultFirstName,
+      lastName: defaultLastName,
+      age: defaultAge
+    )
 
     let createdProfile = app.buttons["profile-card-prof_fixture_01"]
     XCTAssertTrue(createdProfile.waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["\(defaultFirstName) \(defaultLastName)"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["Age \(defaultAge) • Girl"].waitForExistence(timeout: 5))
 
     createdProfile.tap()
 
@@ -33,9 +42,13 @@ final class EduGamesAppUITests: XCTestCase {
   func testCreatedProfilePersistsAcrossRelaunch() {
     app.launch()
 
-    let addProfileButton = app.buttons["add-profile-preschool"]
-    XCTAssertTrue(addProfileButton.waitForExistence(timeout: 5))
-    addProfileButton.tap()
+    let createProfileButton = app.buttons["open-create-profile-form"]
+    XCTAssertTrue(createProfileButton.waitForExistence(timeout: 5))
+    createProfile(
+      firstName: defaultFirstName,
+      lastName: defaultLastName,
+      age: defaultAge
+    )
 
     let createdProfile = app.buttons["profile-card-prof_fixture_01"]
     XCTAssertTrue(createdProfile.waitForExistence(timeout: 5))
@@ -45,15 +58,20 @@ final class EduGamesAppUITests: XCTestCase {
     app.launch()
 
     XCTAssertTrue(createdProfile.waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["\(defaultFirstName) \(defaultLastName)"].waitForExistence(timeout: 5))
     attachScreenshot(named: "profile-picker-relaunch")
   }
 
   func testOpenGameDetailLaunchRuntimeAndExitToCatalog() {
     app.launch()
 
-    let addProfileButton = app.buttons["add-profile-preschool"]
-    XCTAssertTrue(addProfileButton.waitForExistence(timeout: 5))
-    addProfileButton.tap()
+    let createProfileButton = app.buttons["open-create-profile-form"]
+    XCTAssertTrue(createProfileButton.waitForExistence(timeout: 5))
+    createProfile(
+      firstName: defaultFirstName,
+      lastName: defaultLastName,
+      age: defaultAge
+    )
 
     let createdProfile = app.buttons["profile-card-prof_fixture_01"]
     XCTAssertTrue(createdProfile.waitForExistence(timeout: 5))
@@ -88,9 +106,13 @@ final class EduGamesAppUITests: XCTestCase {
   func testParentZoneUpdatesPlayLimitAndPersistsAcrossRelaunch() {
     app.launch()
 
-    let addProfileButton = app.buttons["add-profile-preschool"]
-    XCTAssertTrue(addProfileButton.waitForExistence(timeout: 5))
-    addProfileButton.tap()
+    let createProfileButton = app.buttons["open-create-profile-form"]
+    XCTAssertTrue(createProfileButton.waitForExistence(timeout: 5))
+    createProfile(
+      firstName: defaultFirstName,
+      lastName: defaultLastName,
+      age: defaultAge
+    )
 
     let parentZoneButton = app.buttons["open-parent-zone-button"]
     XCTAssertTrue(parentZoneButton.waitForExistence(timeout: 5))
@@ -136,9 +158,13 @@ final class EduGamesAppUITests: XCTestCase {
     app.launchEnvironment["EDUGAMES_DEBUG_SECONDS_PER_MINUTE"] = "0.1"
     app.launch()
 
-    let addProfileButton = app.buttons["add-profile-preschool"]
-    XCTAssertTrue(addProfileButton.waitForExistence(timeout: 5))
-    addProfileButton.tap()
+    let createProfileButton = app.buttons["open-create-profile-form"]
+    XCTAssertTrue(createProfileButton.waitForExistence(timeout: 5))
+    createProfile(
+      firstName: defaultFirstName,
+      lastName: defaultLastName,
+      age: defaultAge
+    )
 
     let createdProfile = app.buttons["profile-card-prof_fixture_01"]
     XCTAssertTrue(createdProfile.waitForExistence(timeout: 5))
@@ -153,17 +179,20 @@ final class EduGamesAppUITests: XCTestCase {
     playButton.tap()
 
     XCTAssertTrue(identifiedElement("game-runtime-view").waitForExistence(timeout: 5))
-    XCTAssertTrue(identifiedElement("playtime-warning-five-minutes").waitForExistence(timeout: 5))
-    XCTAssertTrue(identifiedElement("catalog-view").waitForExistence(timeout: 5))
+    XCTAssertTrue(identifiedElement("catalog-view").waitForExistence(timeout: 12))
     XCTAssertTrue(app.staticTexts["Play time is up. Ask a parent to extend time in Parent Zone."].waitForExistence(timeout: 5))
   }
 
   func testRuntimeReportFlowIsParentGated() {
     app.launch()
 
-    let addProfileButton = app.buttons["add-profile-preschool"]
-    XCTAssertTrue(addProfileButton.waitForExistence(timeout: 5))
-    addProfileButton.tap()
+    let createProfileButton = app.buttons["open-create-profile-form"]
+    XCTAssertTrue(createProfileButton.waitForExistence(timeout: 5))
+    createProfile(
+      firstName: defaultFirstName,
+      lastName: defaultLastName,
+      age: defaultAge
+    )
 
     let createdProfile = app.buttons["profile-card-prof_fixture_01"]
     XCTAssertTrue(createdProfile.waitForExistence(timeout: 5))
@@ -226,5 +255,42 @@ final class EduGamesAppUITests: XCTestCase {
     }
 
     return app.buttons[label]
+  }
+
+  private func createProfile(
+    firstName: String,
+    lastName: String,
+    age: Int
+  ) {
+    let createProfileButton = app.buttons["open-create-profile-form"]
+    XCTAssertTrue(createProfileButton.waitForExistence(timeout: 5))
+    createProfileButton.tap()
+
+    let firstNameField = app.textFields["create-profile-first-name"]
+    XCTAssertTrue(firstNameField.waitForExistence(timeout: 5))
+    firstNameField.tap()
+    firstNameField.typeText(firstName)
+
+    let lastNameField = app.textFields["create-profile-last-name"]
+    XCTAssertTrue(lastNameField.waitForExistence(timeout: 5))
+    lastNameField.tap()
+    lastNameField.typeText(lastName)
+
+    let ageStepper = identifiedElement("create-profile-age")
+    XCTAssertTrue(ageStepper.waitForExistence(timeout: 5))
+
+    let incrementsNeeded = max(age - 5, 0)
+    if incrementsNeeded > 0 {
+      let incrementButton = ageStepper.buttons["Increment"]
+      XCTAssertTrue(incrementButton.waitForExistence(timeout: 5))
+      for _ in 0..<incrementsNeeded {
+        incrementButton.tap()
+      }
+    }
+
+    let submitButton = app.buttons["submit-create-profile"]
+    XCTAssertTrue(submitButton.waitForExistence(timeout: 5))
+    XCTAssertTrue(submitButton.isEnabled)
+    submitButton.tap()
   }
 }

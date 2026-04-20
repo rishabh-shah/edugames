@@ -33,6 +33,15 @@ export const reportIdSchema = z
   .regex(/^rep_[a-z0-9]{6,}$/i, "Expected report id prefixed with rep_");
 
 export const avatarIdSchema = z.string().min(1).max(64);
+export const personNameSchema = z.string().trim().min(1).max(64);
+export const profileAgeSchema = z.number().int().min(1).max(10);
+export const profileGenderValues = [
+  "BOY",
+  "GIRL",
+  "NONBINARY",
+  "PREFER_NOT_TO_SAY"
+] as const;
+export const profileGenderSchema = z.enum(profileGenderValues);
 export const localeSchema = z.string().min(2).max(32);
 export const gameSlugSchema = z
   .string()
@@ -68,3 +77,4 @@ export const contentFlagsSchema = z.object({
 });
 
 export type Cohort = z.infer<typeof cohortSchema>;
+export type ProfileGender = z.infer<typeof profileGenderSchema>;

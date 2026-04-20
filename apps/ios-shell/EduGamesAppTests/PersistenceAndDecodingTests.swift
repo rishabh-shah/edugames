@@ -18,6 +18,10 @@ struct PersistenceAndDecodingTests {
     let repository = SQLiteProfileRepository(database: database)
     let profile = ChildProfile(
       id: "prof_local_01",
+      firstName: "Ava",
+      lastName: "Shah",
+      age: 7,
+      gender: .girl,
       ageBand: "EARLY_PRIMARY_6_8",
       avatarId: "rocket-fox",
       createdAt: "2026-04-19T19:20:00Z",
@@ -48,6 +52,13 @@ struct PersistenceAndDecodingTests {
     #expect(snapshot.session.installationId == "inst_fixture_ios")
     #expect(snapshot.profiles.isEmpty)
     #expect(try sessionStore.loadSession() == snapshot.session)
+  }
+
+  @Test("live SQLite databases enable WAL mode")
+  func liveDatabaseUsesWriteAheadLogging() throws {
+    let database = try AppDatabase.makeLive(resetLocalData: true)
+
+    #expect(try database.journalMode() == "WAL")
   }
 
   @Test("keychain session store reads the simulator fallback when the keychain is empty")
@@ -178,6 +189,37 @@ struct PersistenceAndDecodingTests {
     #expect(cachedRecord?.entrypointRelativePath == launchSession.manifest.entrypoint)
     #expect(cachedRecord?.sourceURL == launchSession.bundle.bundleURL.absoluteString)
     #expect(archiveEntrypointChecksum == installedEntrypointChecksum)
+  }
+
+  @Test("bundle install accepts local API launch URLs when a matching fixture bundle is available")
+  func apiStyleBundleInstallFallsBackToFixtureResources() throws {
+    let database = try AppDatabase()
+    let cacheRepository = SQLiteBundleCacheRepository(database: database)
+    let installRootURL = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let service = BundleInstallService(
+      cacheRepository: cacheRepository,
+      installRootURL: installRootURL
+    )
+    let fixtureLaunch = LaunchSessionResponse.fixture
+    let launchSession = LaunchSessionResponse(
+      launchSessionId: "ls_live_shape_match",
+      gameId: fixtureLaunch.gameId,
+      version: fixtureLaunch.version,
+      bundle: LaunchBundle(
+        bundleURL: URL(string: "https://cdn.example/games/shape-match/1.0.0/bundle.zip")!,
+        sha256: fixtureLaunch.bundle.sha256,
+        compressedSizeBytes: fixtureLaunch.bundle.compressedSizeBytes
+      ),
+      manifest: fixtureLaunch.manifest,
+      cachePolicy: fixtureLaunch.cachePolicy
+    )
+
+    let installedBundle = try service.installBundle(from: launchSession)
+
+    #expect(FileManager.default.fileExists(atPath: installedBundle.entrypointURL.path))
+    #expect(installedBundle.entrypointURL.lastPathComponent == "index.html")
+    #expect(installedBundle.sourceURL == launchSession.bundle.bundleURL)
   }
 
   @Test("SQLite save-state repository round-trips local game state")

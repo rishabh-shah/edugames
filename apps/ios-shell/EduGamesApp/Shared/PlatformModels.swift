@@ -1,6 +1,39 @@
 import CryptoKit
 import Foundation
 
+enum ChildGender: String, Codable, CaseIterable, Equatable, Sendable {
+  case boy = "BOY"
+  case girl = "GIRL"
+  case nonbinary = "NONBINARY"
+  case preferNotToSay = "PREFER_NOT_TO_SAY"
+
+  var displayTitle: String {
+    switch self {
+    case .boy:
+      return "Boy"
+    case .girl:
+      return "Girl"
+    case .nonbinary:
+      return "Nonbinary"
+    case .preferNotToSay:
+      return "Prefer not to say"
+    }
+  }
+
+  var defaultAvatarId: String {
+    switch self {
+    case .boy:
+      return "rocket-fox"
+    case .girl:
+      return "starlight-otter"
+    case .nonbinary:
+      return "comet-panda"
+    case .preferNotToSay:
+      return "balloon-bear"
+    }
+  }
+}
+
 struct InstallationSession: Codable, Equatable {
   let installationId: String
   let accessToken: String
@@ -9,20 +42,42 @@ struct InstallationSession: Codable, Equatable {
 
 struct ChildProfile: Identifiable, Codable, Equatable {
   let id: String
+  let firstName: String
+  let lastName: String
+  let age: Int
+  let gender: ChildGender
   let ageBand: String
   let avatarId: String
   let createdAt: String
   let lastActiveAt: String
 
+  private enum CodingKeys: String, CodingKey {
+    case id = "profileId"
+    case firstName
+    case lastName
+    case age
+    case gender
+    case ageBand
+    case avatarId
+    case createdAt
+    case lastActiveAt
+  }
+
   var displayTitle: String {
-    ageBand
-      .lowercased()
-      .replacingOccurrences(of: "_", with: " ")
-      .capitalized
+    let fullName = "\(firstName) \(lastName)".trimmingCharacters(in: .whitespacesAndNewlines)
+
+    if fullName.isEmpty {
+      return ageBand
+        .lowercased()
+        .replacingOccurrences(of: "_", with: " ")
+        .capitalized
+    }
+
+    return fullName
   }
 
   var displaySubtitle: String {
-    "Avatar: \(avatarId)"
+    "Age \(age) • \(gender.displayTitle)"
   }
 }
 
@@ -205,29 +260,39 @@ struct GameLaunchDetails: Equatable {
   let installedBundle: InstalledGameBundle
 }
 
-struct ProfileCreationOption: Identifiable, Equatable {
-  let id: String
-  let title: String
-  let subtitle: String
-  let ageBand: String
-  let avatarId: String
+struct CreateChildProfileInput: Equatable, Sendable {
+  let firstName: String
+  let lastName: String
+  let age: Int
+  let gender: ChildGender
 
-  static let presets: [ProfileCreationOption] = [
-    ProfileCreationOption(
-      id: "preschool",
-      title: "Add Preschool Explorer",
-      subtitle: "Ages 3-5",
-      ageBand: "PRESCHOOL_3_5",
-      avatarId: "balloon-bear"
-    ),
-    ProfileCreationOption(
-      id: "early-primary",
-      title: "Add Early Reader",
-      subtitle: "Ages 6-8",
-      ageBand: "EARLY_PRIMARY_6_8",
-      avatarId: "rocket-fox"
-    )
-  ]
+  var normalizedFirstName: String {
+    firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  var normalizedLastName: String {
+    lastName.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  var ageBand: String {
+    switch age {
+    case ...2:
+      return "TODDLER_1_2"
+    case 3...5:
+      return "PRESCHOOL_3_5"
+    case 6...8:
+      return "EARLY_PRIMARY_6_8"
+    default:
+      return "LATE_PRIMARY_9_10"
+    }
+  }
+
+  static let sample = CreateChildProfileInput(
+    firstName: "Ava",
+    lastName: "Shah",
+    age: 5,
+    gender: .girl
+  )
 }
 
 extension CatalogResponse {
