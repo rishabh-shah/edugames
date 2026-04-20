@@ -325,6 +325,12 @@ private final class DelayedDetailPlatformAPIClient: PlatformAPIClient {
     )
   }
 
+  func refreshInstallation(
+    session: InstallationSession
+  ) async throws -> InstallationSession {
+    session
+  }
+
   func createProfile(
     session: InstallationSession,
     ageBand: String,
@@ -427,6 +433,12 @@ private final class DelayedLaunchPlatformAPIClient: PlatformAPIClient {
     )
   }
 
+  func refreshInstallation(
+    session: InstallationSession
+  ) async throws -> InstallationSession {
+    session
+  }
+
   func createProfile(
     session: InstallationSession,
     ageBand: String,
@@ -521,6 +533,12 @@ private final class RecordingPlatformAPIClient: PlatformAPIClient {
       accessToken: "access_fixture_token_1234567890abcdefghijklmnop",
       refreshToken: "refresh_fixture_token_1234567890abcdefghijklmnop"
     )
+  }
+
+  func refreshInstallation(
+    session: InstallationSession
+  ) async throws -> InstallationSession {
+    session
   }
 
   func createProfile(

@@ -161,7 +161,15 @@ final class AppModel {
     do {
       let snapshot = try await bootstrapService.bootstrap()
       profiles = snapshot.profiles
+      selectedProfile = nil
+      selectedGame = nil
+      catalog = nil
+      gameDetail = nil
+      activeLaunchDetails = nil
       loadPlayTimeSettingsCache()
+      if snapshot.didResetLocalProfiles {
+        bootstrapErrorMessage = "The local API restarted, so saved profiles were reset. Create a new profile to continue."
+      }
       route = .profiles
     } catch {
       bootstrapErrorMessage = "Unable to connect to the EduGames shell services. Check the local API and try again."

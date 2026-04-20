@@ -4,6 +4,9 @@ import UIKit
 @MainActor
 protocol PlatformAPIClient {
   func registerInstallation() async throws -> InstallationSession
+  func refreshInstallation(
+    session: InstallationSession
+  ) async throws -> InstallationSession
   func createProfile(
     session: InstallationSession,
     ageBand: String,
@@ -56,6 +59,12 @@ final class FixturePlatformAPIClient: PlatformAPIClient {
       accessToken: "access_fixture_token_1234567890abcdefghijklmnop",
       refreshToken: "refresh_fixture_token_1234567890abcdefghijklmnop"
     )
+  }
+
+  func refreshInstallation(
+    session: InstallationSession
+  ) async throws -> InstallationSession {
+    session
   }
 
   func createProfile(
@@ -159,6 +168,23 @@ final class LivePlatformAPIClient: PlatformAPIClient {
 
     return InstallationSession(
       installationId: response.installationId,
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken
+    )
+  }
+
+  func refreshInstallation(
+    session: InstallationSession
+  ) async throws -> InstallationSession {
+    let response: RefreshInstallationResponse = try await send(
+      path: "/v1/installations/refresh",
+      method: "POST",
+      requestBody: RefreshInstallationRequest(refreshToken: session.refreshToken),
+      accessToken: nil
+    )
+
+    return InstallationSession(
+      installationId: session.installationId,
       accessToken: response.accessToken,
       refreshToken: response.refreshToken
     )
@@ -348,6 +374,15 @@ private struct RegisterInstallationRequest: Encodable {
 
 private struct RegisterInstallationResponse: Decodable {
   let installationId: String
+  let accessToken: String
+  let refreshToken: String
+}
+
+private struct RefreshInstallationRequest: Encodable {
+  let refreshToken: String
+}
+
+private struct RefreshInstallationResponse: Decodable {
   let accessToken: String
   let refreshToken: String
 }
