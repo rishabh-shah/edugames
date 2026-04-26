@@ -55,11 +55,11 @@
                 }
                 // score = fraction of runs * fraction of achievable points * 100
                 // score = Math.round( ((_runs-_runsLeft-1) / _runs) * (_totalScore / _totalPossible) * 100 ).toString();
-                byeString = "Du hast " + _totalScore.toString() + " Punkt";
+                byeString = "You scored " + _totalScore.toString() + " point";
                 if (_totalScore!=1) {
-                    byeString += "e";
+                    byeString += "s";
                 }
-                byeString += ".<br/>Bis zum n&auml;chsten Mal.";
+                byeString += ".<br/>See you next time.";
                 activate('message', 'canvas', '#ddd', 'messageText', byeString );
                 _quitFullScreen = setTimeout(quitFullScreen, 3000);
             }
@@ -246,22 +246,22 @@
                     _totalPossible += _amount;
                     activate('results', 'buttons');
                     if (n==0) {
-                        activate('message', 'canvas', '#bbb', 'messageText', "Zu sp&auml;t. Es waren " + _amount.toString() + '.' );
-                        resultElement.innerHTML = _amount.toString() + "<br/>zu sp&auml;t";
+                        activate('message', 'canvas', '#bbb', 'messageText', "Too slow. There were " + _amount.toString() + '.' );
+                        resultElement.innerHTML = _amount.toString() + "<br/>too slow";
                         resultElement.style.backgroundColor = '#ccc';
                     } else if (n==_amount) {
                         if (_amount==1) {
-                            activate('message', 'canvas', '#bcb', 'messageText', "Richtig! " + _amount.toString() + " Punkt.");
+                            activate('message', 'canvas', '#bcb', 'messageText', "Correct! " + _amount.toString() + " point.");
                         } else {
-                            activate('message', 'canvas', '#bcb', 'messageText', "Richtig! " + _amount.toString() + " Punkte.");
+                            activate('message', 'canvas', '#bcb', 'messageText', "Correct! " + _amount.toString() + " points.");
                         }
                         _totalScore += _amount;
-                        resultElement.innerHTML = _amount.toString() + "<br/>richtig";
+                        resultElement.innerHTML = _amount.toString() + "<br/>correct";
                         resultElement.style.backgroundColor = '#cec';
                     }
                     else {
-                        activate('message', 'canvas', '#cbb', 'messageText', n.toString() + " ist falsch. Es waren " + _amount.toString() + '.' );
-                        resultElement.innerHTML = _amount.toString() + "<br/>falsch";
+                        activate('message', 'canvas', '#cbb', 'messageText', n.toString() + " is wrong. There were " + _amount.toString() + '.' );
+                        resultElement.innerHTML = _amount.toString() + "<br/>wrong";
                         resultElement.style.backgroundColor = '#ecc';
                     }
                     

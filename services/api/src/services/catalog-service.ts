@@ -14,10 +14,9 @@ type Clock = {
 const isAgeBandWithinRange = (
   profileAgeBand: ProfileRecord["ageBand"],
   minAgeBand: PublishedGameRecord["minAgeBand"],
-  maxAgeBand: PublishedGameRecord["maxAgeBand"]
+  _maxAgeBand: PublishedGameRecord["maxAgeBand"]
 ): boolean =>
-  ageBandOrder[profileAgeBand] >= ageBandOrder[minAgeBand] &&
-  ageBandOrder[profileAgeBand] <= ageBandOrder[maxAgeBand];
+  ageBandOrder[profileAgeBand] >= ageBandOrder[minAgeBand];
 
 export class CatalogService {
   constructor(

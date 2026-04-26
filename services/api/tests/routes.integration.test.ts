@@ -278,7 +278,7 @@ describe("EduGames API routes", () => {
         gameId: "shape-match"
       }
     });
-    const blockedLaunch = await app.inject({
+    const latePrimaryLaunch = await app.inject({
       method: "POST",
       url: "/v1/launch-sessions",
       headers: {
@@ -306,7 +306,13 @@ describe("EduGames API routes", () => {
     ]);
 
     expect(latePrimaryCatalog.statusCode).toBe(200);
-    expect(latePrimaryCatalog.json().sections).toEqual([]);
+    expect(latePrimaryCatalog.json().sections[0].items.map((item) => item.slug)).toEqual([
+      "shape-match",
+      "set-sizes-shapes",
+      "triple-number-memory",
+      "game-of-sums",
+      "game-of-differences"
+    ]);
 
     expect(gameDetail.statusCode).toBe(200);
     expect(gameDetail.json().slug).toBe("set-sizes-shapes");
@@ -317,7 +323,8 @@ describe("EduGames API routes", () => {
     expect(launchSession.json().gameId).toBe("shape-match");
     expect(launchSession.json().bundle.bundleUrl).toMatch(/bundle\.zip$/);
 
-    expect(blockedLaunch.statusCode).toBe(403);
+    expect(latePrimaryLaunch.statusCode).toBe(200);
+    expect(latePrimaryLaunch.json().gameId).toBe("shape-match");
 
     await app.close();
   });

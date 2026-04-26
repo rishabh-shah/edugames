@@ -222,6 +222,54 @@ struct PersistenceAndDecodingTests {
     #expect(installedBundle.sourceURL == launchSession.bundle.bundleURL)
   }
 
+  @Test("bundle install accepts local API launch URLs for packaged catalog games")
+  func apiStyleBundleInstallSupportsPackagedCatalogGames() throws {
+    let database = try AppDatabase()
+    let cacheRepository = SQLiteBundleCacheRepository(database: database)
+    let installRootURL = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let service = BundleInstallService(
+      cacheRepository: cacheRepository,
+      installRootURL: installRootURL
+    )
+
+    let archiveURL = try #require(
+      FixtureBundleResourceLocator.resourceURL(
+        named: "set-sizes-shapes-fixture",
+        withExtension: "zip"
+      )
+    )
+    let archiveData = try Data(contentsOf: archiveURL)
+    let archiveChecksum = SHA256.hash(data: archiveData)
+      .map { String(format: "%02x", $0) }
+      .joined()
+    let archiveSize = (try archiveURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? archiveData.count
+
+    let launchSession = LaunchSessionResponse(
+      launchSessionId: "ls_live_set_sizes_shapes",
+      gameId: "set-sizes-shapes",
+      version: "0.1.0",
+      bundle: LaunchBundle(
+        bundleURL: URL(string: "https://cdn.example/games/set-sizes-shapes/0.1.0/bundle.zip")!,
+        sha256: archiveChecksum,
+        compressedSizeBytes: archiveSize
+      ),
+      manifest: LaunchManifest(
+        entrypoint: "index.html",
+        minAgeBand: "PRESCHOOL_3_5",
+        maxAgeBand: "EARLY_PRIMARY_6_8",
+        allowedEvents: ["milestone:round-complete"]
+      ),
+      cachePolicy: LaunchCachePolicy(revalidateAfterSeconds: 86_400)
+    )
+
+    let installedBundle = try service.installBundle(from: launchSession)
+
+    #expect(FileManager.default.fileExists(atPath: installedBundle.entrypointURL.path))
+    #expect(installedBundle.entrypointURL.lastPathComponent == "index.html")
+    #expect(installedBundle.sourceURL == launchSession.bundle.bundleURL)
+  }
+
   @Test("SQLite save-state repository round-trips local game state")
   func saveStateRepositoryRoundTrip() throws {
     let database = try AppDatabase()

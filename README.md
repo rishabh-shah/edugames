@@ -322,8 +322,8 @@ similar to `games/shape-match/tests/`.
 
 ### Make A New Game Show Up In The Local Platform
 
-This part is currently manual, and the local path is not fully generalized for
-arbitrary bundles yet.
+This part is still manual, but the local launch path is now generalized for
+packaged games that follow the normal workspace layout.
 
 To expose a new game through the local API catalog, add it to the in-memory
 published game list in:
@@ -334,41 +334,48 @@ You will usually need to:
 
 1. add a new `PublishedGameRecord` entry in `defaultPublishedGames()`
 2. point its `bundleUrl`, `entrypoint`, age band, categories, and allowed events at your bundle
-3. restart the local API
+3. build the game so `games/<your-game>/dist` exists and matches the manifest metadata
+4. restart the local API
 
-Important caveat: the iOS shell currently does not download arbitrary remote
-bundle URLs for local development. The built-in Shape Match path works because
-the shell falls back to a vendored `shape-match-fixture.zip` resource when the
-API returns the sample CDN-style URL.
+For local iOS development, the shell now resolves fixture installs by `gameId`
+and copies from `games/<gameId>/dist` when present. That means a correctly
+packaged game can launch through the shell without adding a one-off native
+fixture mapping, as long as:
 
-That means adding a `PublishedGameRecord` alone is not enough to make a brand
-new game launch locally through the shell. For a new game, you currently need
-both:
+1. the API publishes the game under the same `gameId`
+2. the built bundle lives at `games/<gameId>/dist`
+3. the manifest `entrypoint` points at a real file inside that built bundle
 
-1. a catalog entry in the local API
-2. matching fixture-side wiring in the iOS shell so the bundle can actually be installed
+If a game appears in catalog but fails to open in the shell, check these first:
 
-If you only want to iterate on the game runtime itself, use the browser loop
-first. If you want your new game to launch through the native shell, plan on
-adding the equivalent fixture resource and lookup path on the iOS side in
-addition to the API record.
+1. `dist/` is current and contains the expected `entrypoint`
+2. the API profile and launch rules still allow that age band
+3. the game does not show its own blocking exit chrome on top of the shell
+4. the runtime defaults to English if the upstream game has a language picker
 
 ## Engineer Checklist
 
-When changing the built-in Shape Match or adding a new game, this is the safest
+When changing Shape Match or adding a new packaged game, this is the safest
 short checklist:
 
 ```sh
 cd /Users/shrutishah/Desktop/Codebase/edugames
 pnpm --filter @edugames/contracts build
 pnpm --filter @edugames/api test
-pnpm --filter @edugames/shape-match test
-pnpm --filter @edugames/shape-match build
-pnpm --filter @edugames/game-validator validate ../../games/shape-match
-pnpm test:playwright
+pnpm --filter @edugames/<your-game> test
+pnpm --filter @edugames/<your-game> typecheck
+pnpm --filter @edugames/<your-game> lint
+pnpm --filter @edugames/<your-game> build
+pnpm --filter @edugames/game-validator validate ../../games/<your-game>
+xcodebuild test -project apps/ios-shell/EduGamesApp.xcodeproj -scheme EduGamesApp -destination 'platform=iOS Simulator,name=iPad (A16),OS=26.4.1' -only-testing:EduGamesAppTests/PersistenceAndDecodingTests
 ```
 
-Then run the iOS shell XCUITests if your change touches the native app flow.
+Then manually launch the game once through the iOS shell to verify:
+
+- catalog visibility is correct for the target age band
+- `POST /v1/launch-sessions` returns `200`
+- the game stays in English during intro, gameplay, and finish states
+- the shell's own runtime controls remain usable and unobstructed
 
 ## Related Docs
 

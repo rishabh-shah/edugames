@@ -18,40 +18,18 @@ const emitStartIfNeeded = () => {
   sdk.emitEvent("game_started");
 };
 
-const installExitButton = () => {
-  const existingButton = document.getElementById("edugames-exit-button");
+const selectDefaultEnglishLocale = () => {
+  const languageScreen = document.getElementById("language");
 
-  if (existingButton) {
-    return existingButton;
+  if (!languageScreen || languageScreen.style.display === "none") {
+    return;
   }
 
-  const button = document.createElement("button");
-  button.id = "edugames-exit-button";
-  button.type = "button";
-  button.textContent = "Exit";
-  Object.assign(button.style, {
-    position: "fixed",
-    top: "18px",
-    right: "18px",
-    zIndex: "9999",
-    display: "block",
-    padding: "14px 18px",
-    borderRadius: "999px",
-    border: "0",
-    fontSize: "18px",
-    fontWeight: "700",
-    color: "#1f2937",
-    background: "rgba(255, 255, 255, 0.92)",
-    boxShadow: "0 10px 24px rgba(15, 23, 42, 0.18)",
-    cursor: "pointer"
-  });
-  button.addEventListener("click", () => {
-    sdk.emitEvent("game_exited");
-    sdk.requestExit();
-  });
-  document.body.append(button);
+  const englishButton = Array.from(languageScreen.querySelectorAll("button")).find((button) =>
+    /english/i.test(button.textContent ?? "")
+  );
 
-  return button;
+  englishButton?.click();
 };
 
 const installInteractionHooks = () => {
@@ -96,9 +74,9 @@ const exposeDebugHooks = () => {
 };
 
 globalThis.addEventListener("load", () => {
-  installExitButton();
   installInteractionHooks();
   installLegacyClickHandlers();
+  selectDefaultEnglishLocale();
   exposeDebugHooks();
   sdk.ready({
     title: GAME_TITLE,

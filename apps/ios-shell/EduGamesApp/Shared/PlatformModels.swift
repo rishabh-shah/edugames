@@ -399,8 +399,6 @@ enum FixtureBundleResourceLocator {
 }
 
 private enum FixtureBundleMaterializer {
-  private static let archiveStem = "shape-match-fixture"
-  private static let expandedDirectoryName = "shape-match-fixture-bundle"
   private static let indexHTML = """
   <!doctype html>
   <html lang="en">
@@ -432,7 +430,7 @@ private enum FixtureBundleMaterializer {
     </body>
   </html>
   """
-  private static let manifestJSON = """
+  private static let defaultManifestJSON = """
   {
     "gameId": "shape-match",
     "version": "1.0.0",
@@ -442,12 +440,13 @@ private enum FixtureBundleMaterializer {
   """
 
   static func resourceURL(named name: String, withExtension fileExtension: String?) throws -> URL {
-    let resources = try ensureResources()
+    let gameId = try resolveGameID(named: name, withExtension: fileExtension)
+    let resources = try ensureResources(for: gameId)
 
     switch (name, fileExtension) {
-    case (archiveStem, "zip"):
+    case (archiveStem(for: gameId), "zip"):
       return resources.archiveURL
-    case (expandedDirectoryName, nil):
+    case (expandedDirectoryName(for: gameId), nil):
       return resources.expandedDirectoryURL
     default:
       throw CocoaError(.fileNoSuchFile)
@@ -455,15 +454,16 @@ private enum FixtureBundleMaterializer {
   }
 
   static func makeLaunchSession() throws -> LaunchSessionResponse {
-    let resources = try ensureResources()
+    let gameId = "shape-match"
+    let resources = try ensureResources(for: gameId)
     let archiveSize = (try resources.archiveURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
 
     return LaunchSessionResponse(
       launchSessionId: "ls_fixture_shape_match",
-      gameId: "shape-match",
+      gameId: gameId,
       version: "1.0.0",
       bundle: LaunchBundle(
-        bundleURL: URL(string: "fixture:///shape-match-fixture.zip")!,
+        bundleURL: URL(string: "fixture:///\(archiveStem(for: gameId)).zip")!,
         sha256: resources.sha256,
         compressedSizeBytes: archiveSize
       ),
@@ -484,14 +484,24 @@ private enum FixtureBundleMaterializer {
     expandedDirectoryURL: URL,
     sha256: String
   ) {
+    try ensureResources(for: "shape-match")
+  }
+
+  private static func ensureResources(for gameId: String) throws -> (
+    archiveURL: URL,
+    expandedDirectoryURL: URL,
+    sha256: String
+  ) {
     let baseURL = FileManager.default.temporaryDirectory
       .appendingPathComponent("edugames-fixtures", isDirectory: true)
+    let archiveStem = archiveStem(for: gameId)
+    let expandedDirectoryName = expandedDirectoryName(for: gameId)
     let archiveURL = baseURL.appendingPathComponent("\(archiveStem).zip")
     let expandedDirectoryURL = baseURL.appendingPathComponent(expandedDirectoryName, isDirectory: true)
 
     try FileManager.default.createDirectory(at: baseURL, withIntermediateDirectories: true)
 
-    if let liveFixtureSourceURL = repoFixtureSourceURL() {
+    if let liveFixtureSourceURL = repoFixtureSourceURL(for: gameId) {
       if FileManager.default.fileExists(atPath: expandedDirectoryURL.path) {
         try? FileManager.default.removeItem(at: expandedDirectoryURL)
       }
@@ -504,7 +514,7 @@ private enum FixtureBundleMaterializer {
       )
 
       guard let indexData = indexHTML.data(using: .utf8),
-            let manifestData = manifestJSON.data(using: .utf8)
+            let manifestData = defaultManifestJSON.data(using: .utf8)
       else {
         throw CocoaError(.coderInvalidValue)
       }
@@ -527,7 +537,27 @@ private enum FixtureBundleMaterializer {
     return (archiveURL, expandedDirectoryURL, checksum)
   }
 
-  private static func repoFixtureSourceURL() -> URL? {
+  private static func resolveGameID(named name: String, withExtension fileExtension: String?) throws -> String {
+    if fileExtension == "zip", name.hasSuffix("-fixture") {
+      return String(name.dropLast("-fixture".count))
+    }
+
+    if fileExtension == nil, name.hasSuffix("-fixture-bundle") {
+      return String(name.dropLast("-fixture-bundle".count))
+    }
+
+    throw CocoaError(.fileNoSuchFile)
+  }
+
+  private static func archiveStem(for gameId: String) -> String {
+    "\(gameId)-fixture"
+  }
+
+  private static func expandedDirectoryName(for gameId: String) -> String {
+    "\(gameId)-fixture-bundle"
+  }
+
+  private static func repoFixtureSourceURL(for gameId: String) -> URL? {
     var currentURL = URL(fileURLWithPath: #filePath)
 
     for _ in 0..<5 {
@@ -536,7 +566,7 @@ private enum FixtureBundleMaterializer {
 
     let repoFixtureURL = currentURL
       .appendingPathComponent("games", isDirectory: true)
-      .appendingPathComponent("shape-match", isDirectory: true)
+      .appendingPathComponent(gameId, isDirectory: true)
       .appendingPathComponent("dist", isDirectory: true)
 
     guard FileManager.default.fileExists(atPath: repoFixtureURL.path) else {
@@ -553,7 +583,7 @@ private enum FixtureBundleMaterializer {
 
     let fileURLs = try bundleFileURLs(in: sourceDirectoryURL)
     let manifestLines = try fileURLs.map { fileURL in
-      let relativePath = expandedDirectoryName + "/" + fileURL.path.replacingOccurrences(
+      let relativePath = sourceDirectoryURL.lastPathComponent + "/" + fileURL.path.replacingOccurrences(
         of: sourceDirectoryURL.path + "/",
         with: ""
       )
@@ -562,7 +592,8 @@ private enum FixtureBundleMaterializer {
       return "file=\(relativePath) sha256=\(checksum) bytes=\(fileData.count)"
     }
 
-    let archiveContents = (["archive=\(archiveStem)"] + manifestLines).joined(separator: "\n")
+    let archiveContents = (["archive=\(archiveURL.deletingPathExtension().lastPathComponent)"] + manifestLines)
+      .joined(separator: "\n")
     guard let archiveData = archiveContents.data(using: .utf8) else {
       throw CocoaError(.coderInvalidValue)
     }

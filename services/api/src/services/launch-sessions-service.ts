@@ -22,10 +22,8 @@ const CATALOG_REVALIDATE_AFTER_SECONDS = 24 * 60 * 60;
 const isAgeBandWithinRange = (
   profileAgeBand: ProfileRecord["ageBand"],
   minAgeBand: PublishedGameRecord["minAgeBand"],
-  maxAgeBand: PublishedGameRecord["maxAgeBand"]
-): boolean =>
-  ageBandOrder[profileAgeBand] >= ageBandOrder[minAgeBand] &&
-  ageBandOrder[profileAgeBand] <= ageBandOrder[maxAgeBand];
+  _maxAgeBand: PublishedGameRecord["maxAgeBand"]
+): boolean => ageBandOrder[profileAgeBand] >= ageBandOrder[minAgeBand];
 
 export class LaunchSessionsService {
   constructor(

@@ -63,7 +63,13 @@ describe("CatalogService", () => {
       "game-of-sums",
       "game-of-differences"
     ]);
-    expect(latePrimaryCatalog.sections).toEqual([]);
+    expect(latePrimaryCatalog.sections[0]?.items.map((item) => item.slug)).toEqual([
+      "shape-match",
+      "set-sizes-shapes",
+      "triple-number-memory",
+      "game-of-sums",
+      "game-of-differences"
+    ]);
   });
 
   it("rejects profile lookups outside the authenticated installation", () => {

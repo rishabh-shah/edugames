@@ -34,7 +34,7 @@ describe("LaunchSessionsService", () => {
     expect(response.bundle.bundleUrl).toMatch(/shape-match\/1\.0\.0\/bundle\.zip$/);
   });
 
-  it("rejects launch requests when the profile age band is outside the game range", () => {
+  it("allows older profiles to launch games that younger profiles can access", () => {
     const repository = new InMemoryPlatformRepository();
 
     repository.saveProfile({
@@ -54,12 +54,13 @@ describe("LaunchSessionsService", () => {
       now: () => new Date("2026-04-19T18:00:00.000Z")
     });
 
-    expect(() =>
-      service.create("inst_owner01", {
-        profileId: "prof_lateprimary01",
-        gameId: "shape-match"
-      })
-    ).toThrow(/age band/i);
+    const response = service.create("inst_owner01", {
+      profileId: "prof_lateprimary01",
+      gameId: "shape-match"
+    });
+
+    expect(response.gameId).toBe("shape-match");
+    expect(response.launchSessionId).toMatch(/^ls_/);
   });
 
   it("rejects launch requests for disabled games", () => {
